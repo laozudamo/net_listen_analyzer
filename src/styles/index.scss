@@ -1,0 +1,149 @@
+body {
+  height: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB,
+    Microsoft YaHei, Arial, sans-serif;
+  // font-weight: 500;
+}
+
+label {
+  font-weight: 700;
+}
+
+html {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+#app {
+  height: 100%;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+.no-padding {
+  padding: 0px !important;
+}
+
+.padding-content {
+  padding: 4px 0;
+}
+
+a:focus,
+a:active {
+  outline: none;
+}
+
+a,
+a:focus,
+a:hover {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+
+div:focus {
+  outline: none;
+}
+
+
+.main {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  // background-color: rgb(232, 232, 232);
+}
+
+.pagination {
+  margin-top: 10px;
+}
+
+.n-tabs .n-tab-pane {
+  padding: 0px !important;
+}
+
+/* 
+  全局输入框宽度
+*/
+// .the-input {
+//   width: 150px !important;
+// }
+
+.pop-dialog {
+  .content {
+    padding: 10px 0px;
+    display: flex;
+    align-items: center;
+
+    .the-label {
+      width: 100px;
+    }
+
+    .pop-footer {
+      margin-top: 10px;
+    }
+  }
+}
+
+.title {
+  font-weight: 500;
+}
+
+.f-e {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.f-s {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.f-a-c {
+  display: flex;
+  align-items: center;
+}
+
+.the-label {
+  width: 100px;
+}
+
+.input-warp {
+  display: flex;
+  align-items: center;
+}
+
+.content {
+  display: flex;
+  height: 100%;
+  overflow: auto;
+
+  .right-content {
+    width: 100%;
+    overflow: auto;
+  }
+}
+
+.the-pag {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  margin-right: 20px;
+}
+
+
+
+.n-base-selection--selected {
+  border-radius: 10px;
+}
+
+.n-layout-sider {
+  border-radius: 0px 18px 0px 0px!important;
+  border: 1px solid #E9EAEC;
+}
