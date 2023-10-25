@@ -3,7 +3,7 @@ export const constantRoutes = [{
     path: '',
     component: () => import('@/layout/index.vue'),
     hidden: true,
-    redirect: '/serve',
+    redirect: '/pcap',
     children: [
         {
             path: '/serve',

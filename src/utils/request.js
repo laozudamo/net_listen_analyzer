@@ -6,8 +6,8 @@ const toaster = createToaster({ type: 'error', position: 'top', duration: 1000 }
 import store from '@/store';
 // create an axios instance
 const service = axios.create({
-    baseURL: 'http://' + import.meta.env.VITE_BASE_API + "/api",
-    // timeout: 6000, // request timeou
+    baseURL: 'http://' + import.meta.env.VITE_BASE_API,
+    timeout: 10000, // request timeou
     headers: {
         'Content-Type': 'application/json;application/x-www-form-urlencoded;charset=UTF-8'
     }
