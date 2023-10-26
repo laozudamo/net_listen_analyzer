@@ -130,7 +130,7 @@ function setMenu () {
     //   icon: () => <SvgIcon name="capture" />,
     // },
     {
-      label: "分析",
+      label: "pcap",
       key: "/pcap",
       icon: () => <SvgIcon name="capture" />,
     },
