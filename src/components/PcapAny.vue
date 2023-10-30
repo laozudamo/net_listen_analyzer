@@ -93,6 +93,7 @@ onMounted(async () => {
   if ($table) {
     await loadData()
   }
+  console.log('table loaded', $table)
 })
 
 async function loadData () {
@@ -156,6 +157,10 @@ const pageVO1 = reactive({
   total: 8
 })
 
+function scroll (v) {
+  console.log('scroll', v)
+}
+
 </script>
 
 <template>
@@ -185,19 +190,21 @@ const pageVO1 = reactive({
           </template>
         </vxe-toolbar>
 
-        <vxe-table :pagerConfig="pagerConfig" size="mini" :menu-config="menuConfig" @menu-click="showPanel"
-          @current-change="currentChange" :loading="loading" show-overflow keep-source ref="xTable" border height="500"
-          :row-config="{ isHover: true, isCurrent: true, useKey: true }" :column-config="{ useKey: true }"
-          :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }" :scroll-x="{ enabled: true, gt: 10 }">
+        <vxe-table @scroll="scroll" :pagerConfig="pagerConfig" size="mini" :menu-config="menuConfig"
+          @menu-click="showPanel" @current-change="currentChange" :loading="loading" show-overflow keep-source
+          ref="xTable" border height="500" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
+          :column-config="{ useKey: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
+          :scroll-x="{ enabled: true, gt: 10 }">
           <vxe-column field="idx" width="100" title="序号"></vxe-column>
           <vxe-column field="time" width="120" title="时间"></vxe-column>
-          <vxe-column field="source" width="200" title="源"></vxe-column>
-          <vxe-column field="dst" width="200" title="目标"></vxe-column>
+          <vxe-column field="source" width="250" title="源"></vxe-column>
+          <vxe-column field="dst" width="250" title="目标"></vxe-column>
           <vxe-column field="protocol" width="100" title="协议"></vxe-column>
           <vxe-column field="len" width="100" title="长度"></vxe-column>
-          <vxe-column field="info"  title="信息"></vxe-column>
+          <vxe-column field="info" title="信息"></vxe-column>
         </vxe-table>
-        <vxe-pager v-model:current-page="pageVO1.currentPage" v-model:page-size="pageVO1.pageSize" :total="pageVO1.total" />
+        <vxe-pager v-model:current-page="pageVO1.currentPage" v-model:page-size="pageVO1.pageSize"
+          :total="pageVO1.total" />
 
       </div>
     </pane>
@@ -209,13 +216,21 @@ const pageVO1 = reactive({
           <div style="white-space: pre-wrap;padding: 20px;min-width:870px;">
             {{ threeData }}
           </div>
-          <div v-if="threeData === null">暂无数据</div>
+          <div v-if="threeData === null">
+            <div style="font-size: 20px;color: #999; display: flex;justify-content: center;align-items: center;">
+              暂无数据
+            </div>
+          </div>
         </pane>
         <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="35">
           <div style="white-space: pre-wrap;padding: 20px;margin-left: 20px;min-width: 530px;">
             {{ codeData }}
           </div>
-          <div v-if="codeData === null">暂无数据</div>
+          <div v-if="codeData === null">
+            <div style="font-size: 20px;color: #999; display: flex;justify-content: center;align-items: center;">
+              暂无数据
+            </div>
+          </div>
         </pane>
 
 

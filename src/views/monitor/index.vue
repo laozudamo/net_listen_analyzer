@@ -1049,7 +1049,7 @@ function handleChangeRes (v) {
   }
 }
 
-::v-deep.n-tabs .n-tabs-rail .n-tabs-tab-wrapper .n-tabs-tab.n-tabs-tab--active {
+:v-deep(.n-tabs .n-tabs-rail .n-tabs-tab-wrapper .n-tabs-tab.n-tabs-tab--active) {
   background-color: #11AF62;
   color: #fff;
 }

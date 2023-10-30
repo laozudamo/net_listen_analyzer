@@ -250,7 +250,7 @@ export default defineComponent({
 </template>
 
 <style lang="scss" scoped>
-::v-deep.splitpanes.default-theme .splitpanes__splitter {
+:v-deep(.splitpanes.default-theme .splitpanes__splitter) {
   background-color: #E9EAEC;
 }
 </style>
