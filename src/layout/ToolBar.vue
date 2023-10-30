@@ -167,10 +167,10 @@ const changeMenu = key => {
         <n-image width="90" height="47" :src="img" preview-disabled />
         <div style="margin-left: 20px;">
           <div :style="{ fontWeight: 700, color: '#0f4b9a' }">
-            网络监听分析仪
+            网络存储分析仪
           </div>
           <div class="title-des">
-            Probe Tester
+            NSA-1
           </div>
         </div>
       </div>
@@ -206,7 +206,7 @@ const changeMenu = key => {
 
 <style lang="scss" scoped>
 .tool-bar {
-  margin-top: 10px;
+  // margin-top: 10px;
   padding: 0px 4px;
   height: 60px;
   display: flex;

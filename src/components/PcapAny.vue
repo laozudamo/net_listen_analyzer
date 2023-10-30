@@ -1,5 +1,5 @@
 <script setup lang="jsx">
-import { ref, computed, onMounted, render } from 'vue'
+import { ref, computed, onMounted, render, reactive } from 'vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import { useElementSize } from '@vueuse/core'
 import 'splitpanes/dist/splitpanes.css'
@@ -17,6 +17,38 @@ const columns = [
   },
 ]
 
+let options = reactive([
+  [
+    { code: 'TCP', name: '追踪TCP', disabled: true },
+    { code: 'UDP', name: '追踪UDP', disabled: true },
+    { code: 'DCCP', name: '追踪DCCP', disabled: true },
+    { code: 'TLSv1.2', name: '追踪TLS', disabled: true },
+    { code: 'HTTP', name: '追踪HTTP', disabled: true },
+    { code: 'HTTP/2', name: '追踪HTTP/2', disabled: true },
+  ]
+])
+
+const menuConfig = reactive({
+  body: {
+    options: options,
+  },
+  visibleMethod: v => {
+    options[0].forEach(item => {
+      item.disabled = true
+      if (v.row.protocol === item.code) {
+        item.disabled = false;
+      }
+    })
+    return true
+  }
+})
+
+const pagerConfig = reactive({
+  enabled: true,
+  pageSize: 10,
+  pageSizes: [5, 10, 15, 20, 50, 100, 200, 500, 1000]
+})
+
 const midEl = ref(null)
 const midElementSize = useElementSize(midEl)
 
@@ -24,6 +56,22 @@ const xTable = ref(null)
 const toolBar = ref(null)
 const filterName = ref('')
 let loading = ref(false)
+
+let sumOptions = ref([
+  {
+    label: "选项1",
+    key: 1
+  },
+  {
+    label: "选项2",
+    key: 2
+  },
+  {
+    label: "选项3",
+    key: 3
+  },
+])
+
 
 let threeData = ref(null)
 let codeData = ref(null)
@@ -97,54 +145,74 @@ const searchEvent = () => {
   }
 }
 
+function showPanel (v) {
+  console.log('showPanel', v)
+}
+
+
+const pageVO1 = reactive({
+  currentPage: 1,
+  pageSize: 30,
+  total: 8
+})
+
 </script>
 
 <template>
   <splitpanes horizontal class="default-theme" :dbl-click-splitter="false">
-    <pane style="background-color:#FFF" class="left-pane">
-      <div style="height: 100%;background: #FFF;padding: 20px;" ref="midEl">
-        <!-- <div style="margin-bottom: 20px;">
-          <BtnIcon color="#000000" :quaternary="false" @click="scrollTop">
-            <Up />
-          </BtnIcon>
-          <BtnIcon color="#000000" :quaternary="false" @click="scrollBottom">
-            <Down />
-          </BtnIcon>
-        </div> -->
+    <pane style="background-color:#FFF">
+      <div style="height: 100%;background: #FFF;padding: 10px;" ref="midEl">
+        <!-- 
+        <BtnIcon color="#000000" :quaternary="false" @click="scrollTop">
+          <Up />
+        </BtnIcon>
+        <BtnIcon color="#000000" :quaternary="false" @click="scrollBottom">
+          <Down />
+        </BtnIcon> -->
+        <!-- <n-dropdown trigger="click" :options="sumOptions" @select="handleSelect">
+              <n-button>统计</n-button>
+            </n-dropdown> -->
 
-        <!--    <vxe-toolbar ref="toolBar" import export refresh>
+        <vxe-toolbar ref="toolBar" refresh>
           <template #tools>
-            <vxe-input v-model="filterName" type="search" placeholder="试试全表搜索" @keyup="searchEvent"></vxe-input>
-            <vxe-button type="text" icon="vxe-icon-undo" class="tool-btn"></vxe-button>
-            <vxe-button type="text" icon="vxe-icon-funnel" class="tool-btn" @click="funnelEvent"></vxe-button>
+            <n-dropdown trigger="click" :options="sumOptions" @select="handleSelect">
+              <n-button>统计</n-button>
+            </n-dropdown>
+            <vxe-input style="width: 500px;margin-right: 20px;margin-left: 20px;" v-model="filterName" type="search"
+              placeholder="试试全表搜索" @keyup="searchEvent"></vxe-input>
+            <!-- <vxe-button type="text" icon="vxe-icon-undo" class="tool-btn"></vxe-button> -->
+            <!-- <vxe-button type="text" icon="vxe-icon-funnel" class="tool-btn" @click="funnelEvent"></vxe-button> -->
           </template>
         </vxe-toolbar>
- -->
-        <vxe-table @current-change="currentChange" :loading="loading" show-overflow keep-source ref="xTable" border
-          height="430" :row-config="{ isHover: true, isCurrent: true, useKey: true }" :column-config="{ useKey: true }"
-          :scroll-y="{ enabled: true, gt: 20, scrollToTopOnChange: true }">
-          <vxe-column field="idx" width="80" title="序号"></vxe-column>
-          <vxe-column field="time" title="时间"></vxe-column>
-          <vxe-column field="source" title="源"></vxe-column>
-          <vxe-column field="dst" title="目标"></vxe-column>
-          <vxe-column field="protocol" title="协议"></vxe-column>
-          <vxe-column field="len" title="长度"></vxe-column>
-          <vxe-column field="info" title="信息" width="350"></vxe-column>
+
+        <vxe-table :pagerConfig="pagerConfig" size="mini" :menu-config="menuConfig" @menu-click="showPanel"
+          @current-change="currentChange" :loading="loading" show-overflow keep-source ref="xTable" border height="500"
+          :row-config="{ isHover: true, isCurrent: true, useKey: true }" :column-config="{ useKey: true }"
+          :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }" :scroll-x="{ enabled: true, gt: 10 }">
+          <vxe-column field="idx" width="100" title="序号"></vxe-column>
+          <vxe-column field="time" width="120" title="时间"></vxe-column>
+          <vxe-column field="source" width="200" title="源"></vxe-column>
+          <vxe-column field="dst" width="200" title="目标"></vxe-column>
+          <vxe-column field="protocol" width="100" title="协议"></vxe-column>
+          <vxe-column field="len" width="100" title="长度"></vxe-column>
+          <vxe-column field="info"  title="信息"></vxe-column>
         </vxe-table>
+        <vxe-pager v-model:current-page="pageVO1.currentPage" v-model:page-size="pageVO1.pageSize" :total="pageVO1.total" />
+
       </div>
     </pane>
-    <pane min-size="50" max-size="50" size="50" class="left-pane">
+    <pane min-size="5" max-size="95" size="40">
       <n-spin style="width: 100%;height: 100%;" v-if="show" :show="show" :delay="1000">
       </n-spin>
       <splitpanes :push-other-panes="false" :dbl-click-splitter="false">
-        <pane style="background-color:#FFF;overflow-y: auto;" min-size="5" max-size="95" size="65">
-          <div style="white-space: pre-wrap;padding: 20px;">
+        <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="65">
+          <div style="white-space: pre-wrap;padding: 20px;min-width:870px;">
             {{ threeData }}
           </div>
           <div v-if="threeData === null">暂无数据</div>
         </pane>
-        <pane style="background-color:#FFF;overflow-y: auto;" min-size="5" max-size="95" size="35">
-          <div style="white-space: pre-wrap;padding: 20px;margin-left: 20px;">
+        <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="35">
+          <div style="white-space: pre-wrap;padding: 20px;margin-left: 20px;min-width: 530px;">
             {{ codeData }}
           </div>
           <div v-if="codeData === null">暂无数据</div>

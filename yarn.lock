@@ -1093,7 +1093,16 @@
   resolved "https://registry.npmjs.org/@vue/shared/-/shared-3.3.4.tgz#06e83c5027f464eef861c329be81454bc8b70780"
   integrity sha512-7OjdcV8vQ74eiz1TZLzZP4JwqM5fA94K6yntPS5Z25r9HDuGNzaGdgvwKYq6S+MxwF0TFRwe50fIR/MYnakdkQ==
 
-"@vueuse/core@^10.4.1":
+"@vueuse/components@^10.5.0":
+  version "10.5.0"
+  resolved "https://registry.npmjs.org/@vueuse/components/-/components-10.5.0.tgz#fdb8c20e3d9bf52a32be8c59dd389fa37acabd09"
+  integrity sha512-zWQZ8zkNBvX++VHfyiUaQ4otb+4PWI8679GR8FvdrNnj+01LXnqvrkyKd8yTCMJ9nHqwRRTJikS5fu4Zspn9DQ==
+  dependencies:
+    "@vueuse/core" "10.5.0"
+    "@vueuse/shared" "10.5.0"
+    vue-demi ">=0.14.6"
+
+"@vueuse/core@10.5.0", "@vueuse/core@^10.4.1":
   version "10.5.0"
   resolved "https://registry.npmjs.org/@vueuse/core/-/core-10.5.0.tgz#04d1e6d26592bb997bb755a4830ea7583c3e8612"
   integrity sha512-z/tI2eSvxwLRjOhDm0h/SXAjNm8N5ld6/SC/JQs6o6kpJ6Ya50LnEL8g5hoYu005i28L0zqB5L5yAl8Jl26K3A==
