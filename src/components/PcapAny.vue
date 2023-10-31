@@ -5,6 +5,7 @@ import { useElementSize } from '@vueuse/core'
 import 'splitpanes/dist/splitpanes.css'
 import { ArrowDownload16Filled as Down, ArrowExportUp24Filled as Up, ArrowLeft24Filled as Left, ArrowRight24Filled as Right } from "@vicons/fluent";
 import { getData, getDetail } from '@/api/pcap.js'
+import bus from 'vue3-eventbus'
 
 const columns = [
   {
@@ -88,19 +89,31 @@ async function scrollTop () {
 
 const list = ref([])
 
-onMounted(async () => {
+let query = ref(null)
+
+bus.on("getNodeData", (data) => {
+  console.log("sss", data)
+  let params = {
+    pcap_path: data.pcap_path,
+    file_name: data.label
+  }
+  query.value = params
+
+  codeData.value = null
+  threeData.value = null
+
   const $table = xTable.value
   if ($table) {
-    await loadData()
+    loadData(params)
   }
-  console.log('table loaded', $table)
 })
 
-async function loadData () {
+
+async function loadData (params) {
   try {
     loading.value = true
     const $table = xTable.value
-    let { data } = await getData()
+    let { data } = await getData(params)
     list.value = data
     await $table.loadData(data)
     loading.value = false
@@ -114,6 +127,7 @@ let show = ref(false)
 async function currentChange (v) {
   show.value = true
   let params = {
+    ...query.value,
     idx: v.row.idx,
   }
   let { data } = await getDetail(params)
@@ -167,17 +181,6 @@ function scroll (v) {
   <splitpanes horizontal class="default-theme" :dbl-click-splitter="false">
     <pane style="background-color:#FFF">
       <div style="height: 100%;background: #FFF;padding: 10px;" ref="midEl">
-        <!-- 
-        <BtnIcon color="#000000" :quaternary="false" @click="scrollTop">
-          <Up />
-        </BtnIcon>
-        <BtnIcon color="#000000" :quaternary="false" @click="scrollBottom">
-          <Down />
-        </BtnIcon> -->
-        <!-- <n-dropdown trigger="click" :options="sumOptions" @select="handleSelect">
-              <n-button>统计</n-button>
-            </n-dropdown> -->
-
         <vxe-toolbar ref="toolBar" refresh>
           <template #tools>
             <n-dropdown trigger="click" :options="sumOptions" @select="handleSelect">
@@ -185,8 +188,6 @@ function scroll (v) {
             </n-dropdown>
             <vxe-input style="width: 500px;margin-right: 20px;margin-left: 20px;" v-model="filterName" type="search"
               placeholder="试试全表搜索" @keyup="searchEvent"></vxe-input>
-            <!-- <vxe-button type="text" icon="vxe-icon-undo" class="tool-btn"></vxe-button> -->
-            <!-- <vxe-button type="text" icon="vxe-icon-funnel" class="tool-btn" @click="funnelEvent"></vxe-button> -->
           </template>
         </vxe-toolbar>
 
