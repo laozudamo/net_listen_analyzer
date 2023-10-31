@@ -59,8 +59,8 @@ defineExpose({
 </script>
 
 <template>
-  <n-modal :style="`width:${width};`" class="the-model" :title="title" v-model:show="showModel"
-    @after-leave="afterLeave" preset="card" size="small" footer-style="flexEnd">
+  <n-modal :style="`width:${width};`" class="the-model" :title="title" v-model:show="showModel" @after-leave="afterLeave"
+    preset="dialog" size="small" footer-style="flexEnd">
     <div class="the-step" v-if="showMore">
       <n-steps v-model:current="current" size="small" @update:current="changeCurrent">
         <n-step :title="item" v-for="(item, index) in theStepList" :key="item"></n-step>

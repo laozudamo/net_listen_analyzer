@@ -2,7 +2,9 @@
 import { h, computed, ref, onMounted, reactive } from "vue";
 import { NIcon } from "naive-ui";
 import { RouterLink, useRouter } from "vue-router";
-import { getData, pacpList, getDetail, filterList } from '@/api/pcap.js'
+import { getData, pacpList, getDetail, filterList, expertInfo } from '@/api/pcap.js'
+import { createToaster } from "@meforma/vue-toaster";
+const toaster = createToaster({ type: 'error', position: 'top', duration: 1000 });
 // import bus from 'vue3-eventbus'
 
 import { Splitpanes, Pane } from 'splitpanes'
@@ -94,6 +96,8 @@ const detailController = ref(null);
 
 let listData = ref([])
 
+let show = ref(false)
+
 async function GetpacpList () {
   try {
     let { data } = await pacpList()
@@ -146,10 +150,12 @@ const nodeProps = ({ option }) => {
   return {
     onClick () {
       if (!option.children && !option.disabled) {
-        // if (detailController.value !== null) {
-        //   detailController.value.abort()
-        //   detailController.value = null
-        // }
+        if (detailController.value !== null) {
+          detailController.value.abort()
+          detailController.value = null
+          show.value = false
+
+        }
 
         handlePcapData(option)
         // bus.emit("getNodeData", option);
@@ -204,7 +210,7 @@ let loading = ref(false)
 
 let sumOptions = ref([
   {
-    label: "选项1",
+    label: "专家信息",
     key: 1
   },
   {
@@ -270,7 +276,6 @@ async function loadData (params) {
   }
 }
 
-let show = ref(false)
 
 async function currentChange (v) {
   show.value = true
@@ -334,6 +339,46 @@ function scroll (v) {
   console.log('scroll', v)
 }
 
+
+
+let expertModel = ref(null)
+let expertInfos = ref(null)
+let expertController = ref(null)
+let expertLoading = ref(null)
+
+const handleSelect = v => {
+  if (query.value === null || loading.value === true) {
+    toaster.show("等待文件加载")
+    return
+  }
+  if (v === 1) {
+    expertModel.value.show()
+    getExertInfo()
+  }
+}
+
+async function getExertInfo () {
+  expertLoading.value = true
+  expertInfos.value = null
+  try {
+    if (expertController.value !== null) {
+      expertController.value.abort()
+      expertController.value = null
+    }
+    expertController.value = new AbortController()
+    let { data } = await expertInfo(query.value, expertController.value)
+    expertInfos.value = data
+    expertLoading.value = false
+  } catch (error) {
+    console.log(error)
+    expertLoading.value = false
+  }
+}
+
+function thrackPacp (v) {
+  console.log(v)
+}
+
 </script>
 
 <template>
@@ -380,6 +425,9 @@ function scroll (v) {
           </pane>
           <pane min-size="5" max-size="95" size="40">
             <n-spin style="width: 100%;height: 100%;" v-if="show" :show="show" :delay="1000">
+              <template #description>
+                加载中...
+              </template>
             </n-spin>
             <splitpanes :push-other-panes="false" :dbl-click-splitter="false">
               <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="65">
@@ -407,6 +455,25 @@ function scroll (v) {
         </splitpanes>
       </pane>
     </splitpanes>
+
+    <TheModel title="专家信息" ref="expertModel" :showConfirm="false" width="1200px" height="680px">
+      <n-spin style="width: 100%;height: 100%;" :show="expertLoading" :delay="1000">
+        <template #description>
+          加载中...
+        </template>
+        <div @click="thrackPacp(ele)" style="white-space: pre-wrap;padding: 20px;cursor: pointer;"
+          v-for="(ele, i) in expertInfos" :key="i">
+          {{ ele }}
+        </div>
+      </n-spin>
+    </TheModel>
+
+    <!-- <n-modal v-model:show="exportModal">
+      <n-card style="width: 600px" title="模态框" :bordered="false" size="huge" role="dialog" aria-modal="true">
+        222
+      </n-card>
+    </n-modal> -->
+
     <!-- <n-layout has-sider>
       <n-layout-sider bordered collapse-mode="width" :collapsed-width="70" :collapsed="collapsed" :show-trigger="false"
         :width="240" @collapse="collapsed = true" @expand="collapsed = false">

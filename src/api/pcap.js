@@ -9,7 +9,7 @@ export function getData (params, controller) {
   })
 }
 
-export function getDetail (data,controller) {
+export function getDetail (data, controller) {
   return request({
     url: 'users/tshark_pcap',
     method: 'post',
@@ -31,5 +31,14 @@ export function filterList (data) {
     url: 'users/pcap/display_filter',
     method: 'post',
     data
+  })
+}
+
+export function expertInfo (params, controller) {
+  return request({
+    url: 'users/expert',
+    method: 'get',
+    params,
+    signal: controller.signal
   })
 }
