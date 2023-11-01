@@ -1,11 +1,10 @@
 <script setup lang="jsx">
-import { h, computed, ref, onMounted, reactive } from "vue";
+import { h, computed, ref, onMounted, reactive, nextTick } from "vue";
 import { NIcon } from "naive-ui";
 import { RouterLink, useRouter } from "vue-router";
 import { getData, pacpList, getDetail, filterList, expertInfo } from '@/api/pcap.js'
 import { createToaster } from "@meforma/vue-toaster";
 const toaster = createToaster({ type: 'error', position: 'top', duration: 1000 });
-// import bus from 'vue3-eventbus'
 
 import { Splitpanes, Pane } from 'splitpanes'
 import { useElementSize } from '@vueuse/core'
@@ -21,8 +20,20 @@ import {
   DocumentTextSharp,
   Folder,
   FolderOpenOutline,
-  FileTrayFullOutline
+  FileTrayFullOutline,
+  ArrowUpSharp,
+  ArrowDownSharp,
+  CaretForwardCircleOutline,
+  PauseCircleOutline,
+  Search,
+  Reload
 } from "@vicons/ionicons5";
+
+import {
+  ZoomIn,
+  ZoomOut,
+  ZoomReset
+} from "@vicons/carbon";
 import {
   System24Filled,
   ContactCardRibbon24Regular
@@ -154,7 +165,6 @@ const nodeProps = ({ option }) => {
           detailController.value.abort()
           detailController.value = null
           show.value = false
-
         }
 
         handlePcapData(option)
@@ -210,77 +220,123 @@ let loading = ref(false)
 
 let sumOptions = ref([
   {
-    label: "专家信息",
+    label: "专业信息",
     key: 1
   },
   {
-    label: "选项2",
+    label: "端点统计",
     key: 2
   },
   {
-    label: "选项3",
+    label: "会话统计",
     key: 3
   },
 ])
 
+const httpOption = [
+  {
+    label: "状态",
+    key: 1
+  },
+  {
+    label: "树结构",
+    key: 2
+  },
+  {
+    label: "URI路径",
+    key: 3
+  },
+  {
+    label: "请求URL",
+    key: 4
+  },
+  {
+    label: "请求和响应",
+    key: 5
+  },
+]
+
+// const icmpOption = [
+//   {
+//     label: "状态",
+//     key: 1
+//   }
+// ]
+
 let threeData = ref(null)
 let codeData = ref(null)
 
-async function scrollBottom () {
-  const $xTable = xTable.value
-  await $xTable.scrollToRow($xTable.getData(1000))
-}
+// async function scrollBottom () {
+//   const $xTable = xTable.value
+//   await $xTable.scrollToRow($xTable.getData(100))
+//   await $xTable.refreshScroll()
+// }
 
-async function scrollTop () {
-  const $xTable = xTable.value
-  await $xTable.scrollToRow($xTable.getData(0))
-}
+// async function scrollTop () {
+//   const $xTable = xTable.value
+
+// await $xTable.scrollToRow($xTable.getData(0))
+// await $xTable.refreshScroll()
+// }
 
 const list = ref([])
 
-let query = ref(null)
+let total = ref(0)
+let pageNum = ref(1)
+
+let query = reactive({
+  pcap_path: "",
+  file_name: "",
+  page: 1,
+  page_size: 100,
+})
+
+const InitQuery = {
+  pcap_path: "",
+  file_name: "",
+  page: 1,
+  page_size: 100,
+}
 
 function handlePcapData (data) {
-  let params = {
-    pcap_path: data.pcap_path,
-    file_name: data.label
-  }
-  query.value = params
+  query = { ...query, ...InitQuery }
+  console.log("query", query)
+  query.pcap_path = data.pcap_path
+  query.file_name = data.label
 
   codeData.value = null
   threeData.value = null
   filterName.value = ""
 
+  loadData()
+}
+
+function loadData () {
+  loading.value = true
   const $table = xTable.value
-  if ($table) {
-    loadData(params)
+  // 如果控制器存在,说明有上个请求,就它取消并设置为空
+  if (controller.value !== null) {
+    controller.value.abort()
+    controller.value = null
   }
-}
 
-async function loadData (params) {
-  try {
-    loading.value = true
-    const $table = xTable.value
-    // 如果控制器存在,说明有上个请求,就它取消并设置为空
-    if (controller.value !== null) {
-      controller.value.abort()
-      controller.value = null
-    }
-    controller.value = new AbortController()
-    let { data } = await getData(params, controller.value)
-    list.value = data
-    await $table.loadData(data)
+  controller.value = new AbortController()
+
+  getData(query, controller.value).then(res => {
+    total.value = res.count
+    pageNum.value = res.page_num
+    $table.loadData(res.data)
+    list.value = res.data
     loading.value = false
-  } catch (error) {
-    // loading.value = false
-  }
-}
+  })
 
+}
 
 async function currentChange (v) {
   show.value = true
   let params = {
-    ...query.value,
+    pcap_path: query.pcap_path,
+    file_name: query.file_name,
     idx: v.row.idx,
   }
 
@@ -292,6 +348,7 @@ async function currentChange (v) {
   detailController.value = new AbortController()
 
   let { data } = await getDetail(params, detailController.value)
+
   threeData.value = data.protocol_tree
   codeData.value = data.protocol_binary
   show.value = false
@@ -315,7 +372,9 @@ async function GetfilterData () {
       display_filter: filterName.value,
       ...query.value
     }
+
     let { data } = await filterList(params)
+
     const $xTable = xTable.value
     $xTable.loadData(data)
     loading.value = false
@@ -329,17 +388,9 @@ function showPanel (v) {
   console.log('showPanel', v)
 }
 
-const pageVO1 = reactive({
-  currentPage: 1,
-  pageSize: 30,
-  total: 8
-})
-
-function scroll (v) {
-  console.log('scroll', v)
-}
-
-
+// function scroll (v) {
+//   console.log('scroll', v)
+// }
 
 let expertModel = ref(null)
 let expertInfos = ref(null)
@@ -366,7 +417,11 @@ async function getExertInfo () {
       expertController.value = null
     }
     expertController.value = new AbortController()
-    let { data } = await expertInfo(query.value, expertController.value)
+    let params = {
+      pcap_path: query.pcap_path,
+      file_name: query.file_name,
+    }
+    let { data } = await expertInfo(params, expertController.value)
     expertInfos.value = data
     expertLoading.value = false
   } catch (error) {
@@ -379,6 +434,44 @@ function thrackPacp (v) {
   console.log(v)
 }
 
+const updatePage = v => {
+  query.page = v
+  loadData()
+}
+
+const updatePageSize = v => {
+  query.page = 1
+  query.page_size = v
+  loadData()
+}
+const reload = () => {
+  query.page = 1
+  loadData()
+}
+
+const fileName = ref("")
+const searchFile = () => {
+
+}
+
+
+
+let winSize = ref(100)
+
+function zoomAdd () {
+  // winSize.value += 0.1
+  // document.body.style.zoom = winSize.value
+}
+
+nextTick(() => {
+  const $table = xTable.value
+  const $toolbar = toolBar.value
+  if ($table && $toolbar) {
+    $table.connect($toolbar)
+  }
+})
+let showDrow = ref(false)
+
 </script>
 
 <template>
@@ -388,29 +481,112 @@ function thrackPacp (v) {
     <splitpanes class="default-theme" :dbl-click-splitter="false">
       <pane size="15" max-size="20">
         <div class="the-menu">
+          <div style="display: flex;align-items: center;margin-top: 10px;margin-left: 10px;">
+            <n-input v-model:value="fileName" type="text" placeholder="搜索文件" />
+            <BtnIcon color="#396CFC" msg="搜索" @click="searchFile">
+              <Search />
+            </BtnIcon>
+          </div>
+
           <n-tree :node-props="nodeProps" :on-update:expanded-keys="updatePrefixWithExpaned" :multiple="false" block-line
             :data="listData" />
         </div>
       </pane>
+
       <pane style="height: calc(100vh - 80px);">
         <splitpanes horizontal class="default-theme" :dbl-click-splitter="false">
           <pane style="background-color:#FFF">
             <div style="height: 100%;background: #FFF;padding: 10px;" ref="midEl">
-              <vxe-toolbar ref="toolBar" refresh>
+
+              <vxe-toolbar ref="toolBar" :custom="true">
+                <template #buttons>
+                  <BtnIcon color="#396CFC" msg="开始" v-if="true">
+                    <CaretForwardCircleOutline />
+                  </BtnIcon>
+                  <BtnIcon color="#C6252C" msg="结束" v-else>
+                    <ReaderOutline />
+                  </BtnIcon>
+
+                  <!-- <n-divider vertical /> -->
+
+                  <!-- <n-button size="small" tertiary circle style="margin-left: 10px;" @click="scrollTop">
+                    <template #icon>
+                      <n-icon>
+                        <ArrowUpSharp />
+                      </n-icon>
+                    </template>
+                  </n-button> -->
+                  <!-- 
+                  <n-button size="small" tertiary circle style="margin-left: 10px;margin-right: 10px;"
+                    @click="scrollBottom">
+                    <template #icon>
+                      <n-icon>
+                        <ArrowDownSharp />
+                      </n-icon>
+                    </template>
+                  </n-button> -->
+
+                  <!-- <n-divider vertical />
+                  <n-button size="small" quaternary circle style="margin-left: 10px;" @click="zoomAdd">
+                    <template #icon>
+                      <n-icon>
+                        <ZoomIn />
+                      </n-icon>
+                    </template>
+                  </n-button>
+                  <n-button size="small" quaternary circle style="margin-left: 5px;">
+                    <template #icon>
+                      <n-icon>
+                        <ZoomOut />
+                      </n-icon>
+                    </template>
+                  </n-button>
+                  <n-button size="small" quaternary circle style="margin-left: 5px;">
+                    <template #icon>
+                      <n-icon>
+                        <ZoomReset />
+                      </n-icon>
+                    </template>
+                  </n-button> -->
+
+                </template>
+
                 <template #tools>
-                  <n-dropdown trigger="click" :options="sumOptions" @select="handleSelect">
-                    <n-button>统计</n-button>
-                  </n-dropdown>
-                  <vxe-input style="width: 500px;margin-right: 20px;margin-left: 20px;" v-model="filterName" type="search"
-                    placeholder="试试全表搜索" @keyup="searchEvent"></vxe-input>
+                  <div style="width: 900px; display: flex;justify-content: space-evenly;">
+                    <n-button @click="showDrow = true">会话统计</n-button>
+                    <n-button>DNS层次结构</n-button>
+                    <n-button>端点统计</n-button>
+                    <n-button>专业分析</n-button>
+                    <n-button>流量图</n-button>
+                    <n-button>ICMP分析</n-button>
+                    <n-button>统计IP地址</n-button>
+                    <n-button>统计源和目标占比</n-button>
+                    <n-dropdown trigger="click" :options="httpOption" @select="handleSelect">
+                      <n-button>HTTP分析</n-button>
+                    </n-dropdown>
+                  </div>
+                  <!-- <n-dropdown trigger="click" :options="sumOptions" @select="handleSelect"> -->
+                  <!-- <n-button>分析</n-button> -->
+                  <!-- </n-dropdown> -->
+                  <vxe-input style="width: 500px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
+                    placeholder="试试全表搜索"></vxe-input>
+                  <n-button style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
+
+                  <n-button size="small" quaternary circle style="margin-left: 5px;" @click="reload">
+                    <template #icon>
+                      <n-icon>
+                        <Reload />
+                      </n-icon>
+                    </template>
+                  </n-button>
                 </template>
               </vxe-toolbar>
 
-              <vxe-table @scroll="scroll" :pagerConfig="pagerConfig" size="mini" :menu-config="menuConfig"
-                @menu-click="showPanel" @current-change="currentChange" :loading="loading" show-overflow keep-source
-                ref="xTable" border height="500" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
-                :column-config="{ useKey: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
-                :scroll-x="{ enabled: true, gt: 10 }">
+              <vxe-table id="idx" :custom-config="{ storage: true }" :pagerConfig="pagerConfig" size="mini"
+                :menu-config="menuConfig" @menu-click="showPanel" @current-change="currentChange" :loading="loading"
+                show-overflow keep-source ref="xTable" border height="500"
+                :row-config="{ isHover: true, isCurrent: true, useKey: true }" :column-config="{ useKey: true }"
+                :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }" :scroll-x="{ enabled: true, gt: 20 }">
                 <vxe-column field="idx" width="100" title="序号"></vxe-column>
                 <vxe-column field="time" width="120" title="时间"></vxe-column>
                 <vxe-column field="source" width="250" title="源"></vxe-column>
@@ -419,8 +595,14 @@ function thrackPacp (v) {
                 <vxe-column field="len" width="100" title="长度"></vxe-column>
                 <vxe-column field="info" title="信息"></vxe-column>
               </vxe-table>
-              <vxe-pager v-model:current-page="pageVO1.currentPage" v-model:page-size="pageVO1.pageSize"
-                :total="pageVO1.total" />
+
+              <div style="display: flex;justify-content: flex-end;margin-top: 5px;align-items: center;">
+                <n-pagination size="small" :page-sizes="[100, 200, 500, 1000, 10000]" @update:page="updatePage"
+                  v-model:page="query.page" @update:page-size="updatePageSize" v-model:page-size="query.page_size"
+                  :page-count="pageNum" show-size-picker />
+                <div style="margin-left: 10px;">{{ total }}条</div>
+              </div>
+
             </div>
           </pane>
           <pane min-size="5" max-size="95" size="40">
@@ -456,7 +638,7 @@ function thrackPacp (v) {
       </pane>
     </splitpanes>
 
-    <TheModel title="专家信息" ref="expertModel" :showConfirm="false" width="1200px" height="680px">
+    <TheModel title="专业信息" ref="expertModel" :showConfirm="false" width="1200px" height="680px">
       <n-spin style="width: 100%;height: 100%;" :show="expertLoading" :delay="1000">
         <template #description>
           加载中...
@@ -467,6 +649,12 @@ function thrackPacp (v) {
         </div>
       </n-spin>
     </TheModel>
+
+    <n-drawer :mask-closable="false" v-model:show="showDrow" width="80%" :placement="placement">
+      <n-drawer-content title="会话统计" closable>
+        《斯通纳》是美国作家约翰·威廉姆斯在 1965 年出版的小说。
+      </n-drawer-content>
+    </n-drawer>
 
     <!-- <n-modal v-model:show="exportModal">
       <n-card style="width: 600px" title="模态框" :bordered="false" size="huge" role="dialog" aria-modal="true">
@@ -529,4 +717,9 @@ function thrackPacp (v) {
 ::v-deep.splitpanes.default-theme .splitpanes__splitter {
   background-color: #E9EAEC;
 }
+
+// .scaled-element {
+//   overflow: auto !important;
+//   transform: scale(1);
+// }
 </style>
