@@ -69,9 +69,11 @@ const select = (v) => {
   v === "logout" ? (path = "/login") : (path = "/userAdmin");
 
   if (v === "logout") {
-    store.dispatch("user/LOGOUT").then(() => {
-      router.push({ path });
-    });
+    localStorage.removeItem("isLogin")
+    router.push({ path });
+    // store.dispatch("user/LOGOUT").then(() => {
+    //   router.push({ path });
+    // });
   }
   router.push(path);
 };

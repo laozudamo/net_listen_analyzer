@@ -3,6 +3,8 @@ import { onBeforeMount, onBeforeUnmount, onMounted, reactive, ref, watch } from 
 import { useRouter, useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import { debounce } from '@/utils/tool.js';
+import { createToaster } from "@meforma/vue-toaster";
+const toaster = createToaster({ type: 'error', position: 'top', duration: 1000 });
 
 const router = useRouter()
 const store = useStore()
@@ -33,16 +35,23 @@ const unWatch = watch(() => route, () => {
 
 const submitForm = debounce(() => {
   console.log('submit')
-  router.push({ path: '/pcap' })
-  // ruleFormRef.value?.validate((errors) => {
-  //   if (!errors) {
-  //     store.dispatch('user/LOGIN', form).then(() => {
-  //       router.push({ path: redirect.value || '/' })
-  //     })
-  //   } else {
-  //     console.log(errors);
-  //   }
-  // })
+
+  ruleFormRef.value?.validate((errors) => {
+    if (!errors) {
+      if (form.username === 'admin' && form.password === '123456') {
+        localStorage.setItem('isLogin', true)
+        router.push({ path: '/pcap' })
+      } else {
+        toaster.show("请输入正确的账户名或密码!!!")
+      }
+
+      // store.dispatch('user/LOGIN', form).then(() => {
+      //   router.push({ path: redirect.value || '/' })
+      // })
+    } else {
+      console.log(errors);
+    }
+  })
 }, 400)
 
 function handleKeyup (e) {

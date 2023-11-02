@@ -42,12 +42,12 @@ const menuOptions = [
   //   icon: renderIcon(ChartNetwork),
   //   label: "管理网口"
   // },
-  {
+  // {
 
-    key: "/setting/useradmin",
-    icon: renderIcon(PersonOutline),
-    label: "用户管理"
-  },
+  //   key: "/setting/useradmin",
+  //   icon: renderIcon(PersonOutline),
+  //   label: "用户管理"
+  // },
   // {
 
   //   key: "/setting/reportconfig",

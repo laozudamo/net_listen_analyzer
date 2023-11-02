@@ -46,6 +46,11 @@ import {
   ChartNetwork
 } from "@vicons/carbon";
 import { useStore } from "vuex";
+
+import PcapHttp from './PcapHttp.vue'
+import PcapConv from './PcapConv.vue'
+import EndPoint from './EndPoint.vue'
+
 const store = useStore();
 const router = useRouter();
 
@@ -233,28 +238,7 @@ let sumOptions = ref([
   },
 ])
 
-const httpOption = [
-  {
-    label: "状态",
-    key: 1
-  },
-  {
-    label: "树结构",
-    key: 2
-  },
-  {
-    label: "URI路径",
-    key: 3
-  },
-  {
-    label: "请求URL",
-    key: 4
-  },
-  {
-    label: "请求和响应",
-    key: 5
-  },
-]
+
 
 // const icmpOption = [
 //   {
@@ -280,7 +264,6 @@ let codeData = ref(null)
 // }
 
 const list = ref([])
-
 let total = ref(0)
 let pageNum = ref(1)
 
@@ -288,14 +271,14 @@ let query = reactive({
   pcap_path: "",
   file_name: "",
   page: 1,
-  page_size: 100,
+  page_size: 20000,
 })
 
 const InitQuery = {
   pcap_path: "",
   file_name: "",
   page: 1,
-  page_size: 100,
+  page_size: 20000,
 }
 
 function handlePcapData (data) {
@@ -408,6 +391,11 @@ const handleSelect = v => {
   }
 }
 
+const clickExpert = () => {
+  expertModel.value.show()
+  getExertInfo()
+}
+
 async function getExertInfo () {
   expertLoading.value = true
   expertInfos.value = null
@@ -471,6 +459,14 @@ nextTick(() => {
   }
 })
 let showDrow = ref(false)
+
+let showHttp = ref(false)
+
+let showConv = ref(false)
+
+let showEndPoint = ref(false)
+
+// let showEndPoint = ref(false)
 
 </script>
 
@@ -552,22 +548,22 @@ let showDrow = ref(false)
                 </template>
 
                 <template #tools>
-                  <div style="width: 900px; display: flex;justify-content: space-evenly;">
-                    <n-button @click="showDrow = true">会话统计</n-button>
-                    <n-button>DNS层次结构</n-button>
-                    <n-button>端点统计</n-button>
-                    <n-button>专业分析</n-button>
+                  <div style="width: 600px; display: flex;justify-content: space-evenly;">
+
+                    <!-- <n-button>DNS层次结构</n-button>
+                    
+                    
                     <n-button>流量图</n-button>
                     <n-button>ICMP分析</n-button>
+                   
+                    <n-button>统计源和目标占比</n-button> -->
+                    <n-button @click="clickExpert">错误统计</n-button>
                     <n-button>统计IP地址</n-button>
-                    <n-button>统计源和目标占比</n-button>
-                    <n-dropdown trigger="click" :options="httpOption" @select="handleSelect">
-                      <n-button>HTTP分析</n-button>
-                    </n-dropdown>
+                    <n-button @click="showEndPoint = true">端点统计</n-button>
+                    <n-button @click="showConv = true">会话统计</n-button>
+                    <n-button @click="showHttp = true">HTTP分析</n-button>
                   </div>
-                  <!-- <n-dropdown trigger="click" :options="sumOptions" @select="handleSelect"> -->
-                  <!-- <n-button>分析</n-button> -->
-                  <!-- </n-dropdown> -->
+
                   <vxe-input style="width: 500px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
                     placeholder="试试全表搜索"></vxe-input>
                   <n-button style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
@@ -585,7 +581,8 @@ let showDrow = ref(false)
               <vxe-table id="idx" :custom-config="{ storage: true }" :pagerConfig="pagerConfig" size="mini"
                 :menu-config="menuConfig" @menu-click="showPanel" @current-change="currentChange" :loading="loading"
                 show-overflow keep-source ref="xTable" border height="500"
-                :row-config="{ isHover: true, isCurrent: true, useKey: true }" :column-config="{ useKey: true }"
+                :row-config="{ isHover: true, isCurrent: true, useKey: true }"
+                :column-config="{ useKey: true, resizable: true }"
                 :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }" :scroll-x="{ enabled: true, gt: 20 }">
                 <vxe-column field="idx" width="100" title="序号"></vxe-column>
                 <vxe-column field="time" width="120" title="时间"></vxe-column>
@@ -597,9 +594,11 @@ let showDrow = ref(false)
               </vxe-table>
 
               <div style="display: flex;justify-content: flex-end;margin-top: 5px;align-items: center;">
-                <n-pagination size="small" :page-sizes="[100, 200, 500, 1000, 10000]" @update:page="updatePage"
+                <!-- <n-pagination size="small" :page-sizes="[100, 200, 500, 1000, 20000]" @update:page="updatePage"
                   v-model:page="query.page" @update:page-size="updatePageSize" v-model:page-size="query.page_size"
-                  :page-count="pageNum" show-size-picker />
+                  :page-count="pageNum" show-size-picker /> -->
+                <n-pagination size="small" @update:page="updatePage" v-model:page="query.page"
+                  v-model:page-size="query.page_size" :page-count="pageNum" />
                 <div style="margin-left: 10px;">{{ total }}条</div>
               </div>
 
@@ -653,6 +652,25 @@ let showDrow = ref(false)
     <n-drawer :mask-closable="false" v-model:show="showDrow" width="80%" :placement="placement">
       <n-drawer-content title="会话统计" closable>
         《斯通纳》是美国作家约翰·威廉姆斯在 1965 年出版的小说。
+      </n-drawer-content>
+    </n-drawer>
+
+    <n-drawer :mask-closable="false" v-model:show="showHttp" width="60%" :placement="placement">
+      <n-drawer-content title="HTTP分析" closable>
+        <PcapHttp></PcapHttp>
+      </n-drawer-content>
+    </n-drawer>
+
+
+    <n-drawer :mask-closable="false" v-model:show="showConv" width="60%" :placement="placement">
+      <n-drawer-content title="会话统计" closable>
+        <PcapConv></PcapConv>
+      </n-drawer-content>
+    </n-drawer>
+
+    <n-drawer :mask-closable="false" v-model:show="showEndPoint" width="60%" :placement="placement">
+      <n-drawer-content title="端点统计" closable>
+        <EndPoint></EndPoint>
       </n-drawer-content>
     </n-drawer>
 

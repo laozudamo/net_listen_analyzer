@@ -5,131 +5,131 @@ export const constantRoutes = [{
     hidden: true,
     redirect: '/pcap',
     children: [
-        {
-            path: '/serve',
-            name: 'serve',
-            component: () => import('@/views/serve/index.vue')
-        },
-        {
-            path: "/testcase",
-            name: 'testcase',
-            component: () => import('@/views/testCase/index.vue'),
-            children: [
-                {
-                    path: 'layer23',
-                    name: 'layer23',
-                    children: [
-                        {
-                            path: '',
-                            name: '',
-                            component: () => import('@/views/testCase/layer23/index.vue')
-                        },
-                        {
-                            path: 'flow',
-                            name: 'flow',
-                            component: () => import('@/views/testCase/layer23/flow.vue')
-                        },
-                    ]
-                },
-                {
-                    path: 'tcp',
-                    name: 'tcp',
-                    component: () => import('@/views/testCase/tcp/index.vue')
-                },
-                {
-                    path: 'igmpv1',
-                    name: 'igmpv1',
-                    component: () => import('@/views/testCase/igmp/igmpv1.vue')
-                },
-                {
-                    path: 'igmpv2',
-                    name: 'igmpv2',
-                    component: () => import('@/views/testCase/igmp/igmpv2.vue')
-                },
-                {
-                    path: 'igmpv3',
-                    name: 'igmpv3',
-                    component: () => import('@/views/testCase/igmp/igmpv3.vue')
-                },
-                {
-                    path: 'icmp',
-                    name: 'icmp',
-                    component: () => import('@/views/testCase/icmp/index.vue')
-                },
-                {
-                    path: 'ipv4',
-                    name: 'ipv4',
-                    component: () => import('@/views/testCase/ipv4/index.vue')
-                },
-                {
-                    path: 'ipv6',
-                    name: 'ipv6',
-                    component: () => import('@/views/testCase/ipv6/index.vue')
-                },
-                {
-                    path: 'udp',
-                    name: 'udp',
-                    component: () => import('@/views/testCase/udp/index.vue')
-                },
+        // {
+        //     path: '/serve',
+        //     name: 'serve',
+        //     component: () => import('@/views/serve/index.vue')
+        // },
+        // {
+        //     path: "/testcase",
+        //     name: 'testcase',
+        //     component: () => import('@/views/testCase/index.vue'),
+        //     children: [
+        //         {
+        //             path: 'layer23',
+        //             name: 'layer23',
+        //             children: [
+        //                 {
+        //                     path: '',
+        //                     name: '',
+        //                     component: () => import('@/views/testCase/layer23/index.vue')
+        //                 },
+        //                 {
+        //                     path: 'flow',
+        //                     name: 'flow',
+        //                     component: () => import('@/views/testCase/layer23/flow.vue')
+        //                 },
+        //             ]
+        //         },
+        //         {
+        //             path: 'tcp',
+        //             name: 'tcp',
+        //             component: () => import('@/views/testCase/tcp/index.vue')
+        //         },
+        //         {
+        //             path: 'igmpv1',
+        //             name: 'igmpv1',
+        //             component: () => import('@/views/testCase/igmp/igmpv1.vue')
+        //         },
+        //         {
+        //             path: 'igmpv2',
+        //             name: 'igmpv2',
+        //             component: () => import('@/views/testCase/igmp/igmpv2.vue')
+        //         },
+        //         {
+        //             path: 'igmpv3',
+        //             name: 'igmpv3',
+        //             component: () => import('@/views/testCase/igmp/igmpv3.vue')
+        //         },
+        //         {
+        //             path: 'icmp',
+        //             name: 'icmp',
+        //             component: () => import('@/views/testCase/icmp/index.vue')
+        //         },
+        //         {
+        //             path: 'ipv4',
+        //             name: 'ipv4',
+        //             component: () => import('@/views/testCase/ipv4/index.vue')
+        //         },
+        //         {
+        //             path: 'ipv6',
+        //             name: 'ipv6',
+        //             component: () => import('@/views/testCase/ipv6/index.vue')
+        //         },
+        //         {
+        //             path: 'udp',
+        //             name: 'udp',
+        //             component: () => import('@/views/testCase/udp/index.vue')
+        //         },
 
-                {
-                    path: 'arp',
-                    name: 'arp',
-                    component: () => import('@/views/testCase/arp/index.vue')
-                },
-                {
-                    path: 'playBack',
-                    name: 'playBack',
-                    component: () => import('@/views/testCase/playBack/index.vue')
-                },
-                {
-                    path: 'rfcCreat',
-                    name: 'rfcCreat',
-                    component: () => import('@/views/testCase/rfc2544/rfcCreat.vue')
-                },
-                {
-                    path: 'rfcDelay',
-                    name: 'rfcDelay',
-                    component: () => import('@/views/testCase/rfc2544/rfcDelay.vue')
-                },
-                {
-                    path: 'rfcThroughput',
-                    name: 'rfcThroughput',
-                    component: () => import('@/views/testCase/rfc2544/rfcThroughput.vue')
-                },
-                {
-                    path: 'rfcBack',
-                    name: 'rfcBack',
-                    component: () => import('@/views/testCase/rfc2544/rfcBack.vue')
-                },
-                {
-                    path: 'rdma',
-                    name: 'rdma',
-                    component: () => import('@/views/testCase/rdma/index.vue')
-                },
+        //         {
+        //             path: 'arp',
+        //             name: 'arp',
+        //             component: () => import('@/views/testCase/arp/index.vue')
+        //         },
+        //         {
+        //             path: 'playBack',
+        //             name: 'playBack',
+        //             component: () => import('@/views/testCase/playBack/index.vue')
+        //         },
+        //         {
+        //             path: 'rfcCreat',
+        //             name: 'rfcCreat',
+        //             component: () => import('@/views/testCase/rfc2544/rfcCreat.vue')
+        //         },
+        //         {
+        //             path: 'rfcDelay',
+        //             name: 'rfcDelay',
+        //             component: () => import('@/views/testCase/rfc2544/rfcDelay.vue')
+        //         },
+        //         {
+        //             path: 'rfcThroughput',
+        //             name: 'rfcThroughput',
+        //             component: () => import('@/views/testCase/rfc2544/rfcThroughput.vue')
+        //         },
+        //         {
+        //             path: 'rfcBack',
+        //             name: 'rfcBack',
+        //             component: () => import('@/views/testCase/rfc2544/rfcBack.vue')
+        //         },
+        //         {
+        //             path: 'rdma',
+        //             name: 'rdma',
+        //             component: () => import('@/views/testCase/rdma/index.vue')
+        //         },
 
-            ]
-        },
-        {
-            path: "/task",
-            name: 'task',
-            component: () => import('@/views/task/index.vue')
-        },
-        {
-            path: "/monitor",
-            name: 'monitor',
-            component: () => import('@/views/monitor/index.vue')
-        },
-        {
-            path: "/report",
-            name: 'report',
-            component: () => import('@/views/report/index.vue')
-        },
-        {
-            path: "/capture",
-            name: 'capture',
-            component: () => import('@/views/capture/index.vue')
-        },
+        //     ]
+        // },
+        // {
+        //     path: "/task",
+        //     name: 'task',
+        //     component: () => import('@/views/task/index.vue')
+        // },
+        // {
+        //     path: "/monitor",
+        //     name: 'monitor',
+        //     component: () => import('@/views/monitor/index.vue')
+        // },
+        // {
+        //     path: "/report",
+        //     name: 'report',
+        //     component: () => import('@/views/report/index.vue')
+        // },
+        // {
+        //     path: "/capture",
+        //     name: 'capture',
+        //     component: () => import('@/views/capture/index.vue')
+        // },
         {
             path: "/setting",
             name: 'setting',
@@ -160,16 +160,16 @@ export const constantRoutes = [{
                     name: 'reportconfig',
                     component: () => import('@/views/setting/reportConfig/index.vue')
                 },
-                {
-                    path: "sets",
-                    name: 'sets',
-                    component: () => import('@/views/setting/index.vue')
-                },
-                {
-                    path: "netCard",
-                    name: 'netCard',
-                    component: () => import('@/views/setting/netCard/index.vue')
-                },
+                // {
+                //     path: "sets",
+                //     name: 'sets',
+                //     component: () => import('@/views/setting/index.vue')
+                // },
+                // {
+                //     path: "netCard",
+                //     name: 'netCard',
+                //     component: () => import('@/views/setting/netCard/index.vue')
+                // },
                 {
                     path: "license",
                     name: 'license',

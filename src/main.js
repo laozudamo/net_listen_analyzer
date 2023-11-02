@@ -14,7 +14,7 @@ import 'vxe-table/lib/style.css'
 
 import './styles/index.scss'
 import naive from 'naive-ui'
-// import './permission.js'
+import './permission.js'
 import eventBus from 'vue3-eventbus'
 
 import 'virtual:svg-icons-register' // vite-plugin-svg-icons
