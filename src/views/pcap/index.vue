@@ -50,6 +50,8 @@ import { useStore } from "vuex";
 import PcapHttp from './PcapHttp.vue'
 import PcapConv from './PcapConv.vue'
 import EndPoint from './EndPoint.vue'
+import PcapTraffic from './PcapTraffic.vue'
+import PcapSum from './PcapSum.vue'
 
 const store = useStore();
 const router = useRouter();
@@ -271,14 +273,14 @@ let query = reactive({
   pcap_path: "",
   file_name: "",
   page: 1,
-  page_size: 20000,
+  page_size: 1000,
 })
 
 const InitQuery = {
   pcap_path: "",
   file_name: "",
   page: 1,
-  page_size: 20000,
+  page_size: 1000,
 }
 
 function handlePcapData (data) {
@@ -466,6 +468,10 @@ let showConv = ref(false)
 
 let showEndPoint = ref(false)
 
+let showSum = ref(false)
+
+let showTraffic = ref(false)
+
 // let showEndPoint = ref(false)
 
 </script>
@@ -552,13 +558,14 @@ let showEndPoint = ref(false)
 
                     <!-- <n-button>DNS层次结构</n-button>
                     
-                    
-                    <n-button>流量图</n-button>
+            
                     <n-button>ICMP分析</n-button>
                    
                     <n-button>统计源和目标占比</n-button> -->
+
                     <n-button @click="clickExpert">错误统计</n-button>
-                    <n-button>统计IP地址</n-button>
+                    <n-button @click="showTraffic = true">流量图</n-button>
+                    <n-button @click="showSum = true">统计信息</n-button>
                     <n-button @click="showEndPoint = true">端点统计</n-button>
                     <n-button @click="showConv = true">会话统计</n-button>
                     <n-button @click="showHttp = true">HTTP分析</n-button>
@@ -671,6 +678,18 @@ let showEndPoint = ref(false)
     <n-drawer :mask-closable="false" v-model:show="showEndPoint" width="60%" :placement="placement">
       <n-drawer-content title="端点统计" closable>
         <EndPoint></EndPoint>
+      </n-drawer-content>
+    </n-drawer>
+
+    <n-drawer :mask-closable="false" v-model:show="showTraffic" width="60%" :placement="placement">
+      <n-drawer-content title="流量图统计" closable>
+        <PcapTraffic></PcapTraffic>
+      </n-drawer-content>
+    </n-drawer>
+
+    <n-drawer :mask-closable="false" v-model:show="showSum" width="60%" :placement="placement">
+      <n-drawer-content title="统计" closable>
+        <PcapSum></PcapSum>
       </n-drawer-content>
     </n-drawer>
 
