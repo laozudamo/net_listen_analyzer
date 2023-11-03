@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getData (params, controller) {
   return request({
-    url: 'users/tshark_pcap',
+    url: '/pcap/list',
     method: 'get',
     params,
     signal: controller.signal
@@ -11,34 +11,52 @@ export function getData (params, controller) {
 
 export function getDetail (data, controller) {
   return request({
-    url: 'users/tshark_pcap',
+    url: '/pcap/pkt/details',
     method: 'post',
     data,
     signal: controller.signal
   })
 }
 
-export function pacpList () {
+export function pacpList (params) {
   return request({
-    url: 'users/pcap/list',
+    url: '/pcap/file/list',
     method: 'get',
+    params
   })
 }
 
 
-export function filterList (data) {
+export function filterList (params) {
   return request({
-    url: 'users/pcap/display_filter',
-    method: 'post',
-    data
+    url: '/pcap/display_filter',
+    method: 'get',
+    params
   })
 }
 
 export function expertInfo (params, controller) {
   return request({
-    url: 'users/expert',
+    url: 'pcap/expert',
     method: 'get',
     params,
     signal: controller.signal
+  })
+}
+
+export function sessionInfo (params) {
+  return request({
+    url: '/pcap/statistical_sonversations',
+    method: 'get',
+    params,
+  })
+}
+
+
+export function endPointInfo (params) {
+  return request({
+    url: '/pcap/statistical_endpoints',
+    method: 'get',
+    params,
   })
 }

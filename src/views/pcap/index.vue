@@ -2,7 +2,7 @@
 import { h, computed, ref, onMounted, reactive, nextTick } from "vue";
 import { NIcon } from "naive-ui";
 import { RouterLink, useRouter } from "vue-router";
-import { getData, pacpList, getDetail, filterList, expertInfo } from '@/api/pcap.js'
+import { getData, pacpList, getDetail, filterList, expertInfo, sessionInfo } from '@/api/pcap.js'
 import { createToaster } from "@meforma/vue-toaster";
 const toaster = createToaster({ type: 'error', position: 'top', duration: 1000 });
 
@@ -116,9 +116,15 @@ let listData = ref([])
 
 let show = ref(false)
 
+
+let pcapParams = {
+  page: 1,
+  page_size: 10
+}
+
 async function GetpacpList () {
   try {
-    let { data } = await pacpList()
+    let { data } = await pacpList(pcapParams)
     let tmpData = data.map(item => {
       let obj = {
         label: item.key,
@@ -355,7 +361,7 @@ async function GetfilterData () {
   try {
     let params = {
       display_filter: filterName.value,
-      ...query.value
+      ...query
     }
 
     let { data } = await filterList(params)
@@ -671,13 +677,13 @@ let showTraffic = ref(false)
 
     <n-drawer :mask-closable="false" v-model:show="showConv" width="60%" :placement="placement">
       <n-drawer-content title="会话统计" closable>
-        <PcapConv></PcapConv>
+        <PcapConv :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapConv>
       </n-drawer-content>
     </n-drawer>
 
     <n-drawer :mask-closable="false" v-model:show="showEndPoint" width="60%" :placement="placement">
       <n-drawer-content title="端点统计" closable>
-        <EndPoint></EndPoint>
+        <EndPoint :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></EndPoint>
       </n-drawer-content>
     </n-drawer>
 
