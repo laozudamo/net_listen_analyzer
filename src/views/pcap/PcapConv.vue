@@ -13,8 +13,12 @@ let content = ref(null)
 
 const tabList = [
   {
-    label: "IP会话",
+    label: "IPV4会话",
     key: 'ip',
+  },
+  {
+    label: "IPv6会话",
+    key: 'ipv6',
   },
   {
     label: "TCP会话",
@@ -28,14 +32,10 @@ const tabList = [
     label: "Ethernet会话",
     key: "Ethernet"
   },
-  {
-    label: "IPv4会话",
-    key: "IPv4"
-  },
-  {
-    label: "IEEE 802.11",
-    key: "IEEE 802.11"
-  },
+  // {
+  //   label: "IEEE 802.11",
+  //   key: "IEEE 802.11"
+  // },
 ]
 
 let loading = ref(false)

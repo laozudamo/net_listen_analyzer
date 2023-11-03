@@ -45,6 +45,7 @@ import {
   Catalog,
   ChartNetwork
 } from "@vicons/carbon";
+
 import { useStore } from "vuex";
 
 import PcapHttp from './PcapHttp.vue'
@@ -279,14 +280,14 @@ let query = reactive({
   pcap_path: "",
   file_name: "",
   page: 1,
-  page_size: 1000,
+  page_size: 10000,
 })
 
 const InitQuery = {
   pcap_path: "",
   file_name: "",
   page: 1,
-  page_size: 1000,
+  page_size: 10000,
 }
 
 function handlePcapData (data) {
@@ -477,6 +478,13 @@ let showEndPoint = ref(false)
 let showSum = ref(false)
 
 let showTraffic = ref(false)
+
+// let disable = computed(() => {
+//   if (query.pcap_path && query.pcap_name) {
+//     return false
+//   }
+//   return true
+// })
 
 // let showEndPoint = ref(false)
 

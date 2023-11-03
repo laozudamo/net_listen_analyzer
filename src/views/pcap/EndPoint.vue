@@ -13,8 +13,12 @@ let content = ref(null)
 
 const tabList = [
   {
-    label: "IP端点",
+    label: "IPV4端点",
     key: 'ip',
+  },
+  {
+    label: "IPV6端点",
+    key: 'ipv6',
   },
   {
     label: "TCP端点",
@@ -26,16 +30,12 @@ const tabList = [
   },
   {
     label: "Ethernet端点",
-    key: "Ethernet"
+    key: "ethernet"
   },
-  {
-    label: "IPv4端点",
-    key: "IPv4"
-  },
-  {
-    label: "IEEE 802.11",
-    key: "IEEE 802.11"
-  },
+  // {
+  //   label: "IEEE 802.11",
+  //   key: "ieee 802.11"
+  // },
 ]
 
 let loading = ref(false)
