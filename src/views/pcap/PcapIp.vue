@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { IoStatInfo, IoPhsInfo } from '@/api/pcap.js'
+import { ipInfo } from '@/api/pcap.js'
 
 const props = defineProps({
   query: {
@@ -13,29 +13,39 @@ let content = ref(null)
 
 const tabList = [
   {
-    label: "分析包量和字节大小",
+    label: "IPv4地址占比",
     key: '1',
+    value: 'ip_hosts'
   },
+
   {
-    label: "层次结构及包量",
+    label: "IPv4源地址和目标地址占比",
+    value: 'ip_srcdst',
     key: '2',
   },
-  // {
-  //   label: "IEEE 802.11",
-  //   key: "ieee 802.11"
-  // },
+
+  {
+    label: "IPv6地址占比",
+    value: 'ip6_hosts',
+    key: '3',
+  },
+  {
+    label: "IPv6源地址和目标地址占比",
+    value: 'ip6_srcdst',
+    key: '4',
+  },
 ]
 
 let loading = ref(false)
 
-async function getStatInfo (io_type) {
+async function getInfo (protocol) {
   loading.value = true
   try {
     let params = {
-      io_type,
+      protocol,
       ...props.query
     }
-    let { data } = await IoStatInfo(params)
+    let { data } = await ipInfo(params)
     content.value = data
     loading.value = false
 
@@ -46,37 +56,30 @@ async function getStatInfo (io_type) {
 }
 
 
-async function getPhsInfo (interval) {
-  loading.value = true
-  try {
-    let params = {
-      interval,
-      ...props.query
-    }
-    let { data } = await IoPhsInfo(params)
-    content.value = data
-    loading.value = false
+// async function getPhsInfo (protocol) {
+//   loading.value = true
+//   try {
+//     let params = {
+//       protocol,
+//       ...props.query
+//     }
+//     let { data } = await ipInfo(params)
+//     content.value = data
+//     loading.value = false
 
-  } catch (error) {
-    loading.value = false
-    console.log(error)
-  }
-}
+//   } catch (error) {
+//     loading.value = false
+//     console.log(error)
+//   }
+// }
 
 function changeTab (v) {
-  if (v == 1) {
-    getStatInfo("phs")
-  } else if (v == 2) {
-    console.log(2)
-    console.log('phs')
-    getPhsInfo("phs")
-  } else {
-    //   console.log('333')
-  }
+  let val = tabList[v - 1].value
+  getInfo(val)
 }
 
 onMounted(() => {
-  getStatInfo("phs")
+  getInfo("ip_hosts")
 })
 
 </script>

@@ -53,14 +53,16 @@ import PcapConv from './PcapConv.vue'
 import EndPoint from './EndPoint.vue'
 import PcapTraffic from './PcapTraffic.vue'
 import PcapSum from './PcapSum.vue'
+import PcapIp from './PcapIp.vue'
 
 const store = useStore();
 const router = useRouter();
 
+let globalDisabled = ref(true)
+
 function renderIcon (icon) {
   return () => h(NIcon, null, { default: () => h(icon) });
 }
-// { color: "#FECF3E"}
 
 const menuOptions = [
   {
@@ -116,7 +118,6 @@ const detailController = ref(null);
 let listData = ref([])
 
 let show = ref(false)
-
 
 let pcapParams = {
   page: 1,
@@ -181,6 +182,7 @@ const nodeProps = ({ option }) => {
           show.value = false
         }
 
+        globalDisabled.value = true
         handlePcapData(option)
         // bus.emit("getNodeData", option);
       }
@@ -292,9 +294,11 @@ const InitQuery = {
 
 function handlePcapData (data) {
   query = { ...query, ...InitQuery }
-  console.log("query", query)
+  // console.log("query", query)
+
   query.pcap_path = data.pcap_path
   query.file_name = data.label
+
 
   codeData.value = null
   threeData.value = null
@@ -318,6 +322,7 @@ function loadData () {
     total.value = res.count
     pageNum.value = res.page_num
     $table.loadData(res.data)
+    globalDisabled.value = false
     list.value = res.data
     loading.value = false
   })
@@ -479,6 +484,9 @@ let showSum = ref(false)
 
 let showTraffic = ref(false)
 
+let showPcapIp = ref(false)
+
+
 // let disable = computed(() => {
 //   if (query.pcap_path && query.pcap_name) {
 //     return false
@@ -516,10 +524,10 @@ let showTraffic = ref(false)
 
               <vxe-toolbar ref="toolBar" :custom="true">
                 <template #buttons>
-                  <BtnIcon color="#396CFC" msg="开始" v-if="true">
+                  <BtnIcon :disabled="globalDisabled" color="#396CFC" msg="开始" v-if="true">
                     <CaretForwardCircleOutline />
                   </BtnIcon>
-                  <BtnIcon color="#C6252C" msg="结束" v-else>
+                  <BtnIcon :disabled="globalDisabled" color="#C6252C" msg="结束" v-else>
                     <ReaderOutline />
                   </BtnIcon>
 
@@ -577,19 +585,21 @@ let showTraffic = ref(false)
                    
                     <n-button>统计源和目标占比</n-button> -->
 
-                    <n-button @click="clickExpert">错误统计</n-button>
-                    <n-button @click="showTraffic = true">流量图</n-button>
-                    <n-button @click="showSum = true">统计信息</n-button>
-                    <n-button @click="showEndPoint = true">端点统计</n-button>
-                    <n-button @click="showConv = true">会话统计</n-button>
-                    <n-button @click="showHttp = true">HTTP分析</n-button>
+                    <n-button :disabled="globalDisabled" @click="clickExpert">错误统计</n-button>
+                    <!-- <n-button @click="showTraffic = true">流量图</n-button> -->
+                    <n-button :disabled="globalDisabled" @click="showPcapIp = true">IP信息</n-button>
+                    <n-button :disabled="globalDisabled" @click="showSum = true">统计信息</n-button>
+                    <n-button :disabled="globalDisabled" @click="showEndPoint = true">端点统计</n-button>
+                    <n-button :disabled="globalDisabled" @click="showConv = true">会话统计</n-button>
+                    <n-button :disabled="globalDisabled" @click="showHttp = true">HTTP分析</n-button>
                   </div>
 
-                  <vxe-input style="width: 500px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
-                    placeholder="试试全表搜索"></vxe-input>
-                  <n-button style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
+                  <vxe-input :disabled="globalDisabled" style="width: 500px;margin-right: 5px;margin-left: 20px;"
+                    v-model="filterName" type="search" placeholder="试试全表搜索"></vxe-input>
+                  <n-button :disabled="globalDisabled" style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
 
-                  <n-button size="small" quaternary circle style="margin-left: 5px;" @click="reload">
+                  <n-button :disabled="globalDisabled" size="small" quaternary circle style="margin-left: 5px;"
+                    @click="reload">
                     <template #icon>
                       <n-icon>
                         <Reload />
@@ -676,34 +686,40 @@ let showTraffic = ref(false)
       </n-drawer-content>
     </n-drawer>
 
-    <n-drawer :mask-closable="false" v-model:show="showHttp" width="60%" :placement="placement">
+    <n-drawer :mask-closable="false" v-model:show="showHttp" width="950" :placement="placement">
       <n-drawer-content title="HTTP分析" closable>
-        <PcapHttp></PcapHttp>
+        <PcapHttp :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapHttp>
       </n-drawer-content>
     </n-drawer>
 
 
-    <n-drawer :mask-closable="false" v-model:show="showConv" width="60%" :placement="placement">
+    <n-drawer :mask-closable="false" v-model:show="showConv" width="1000" :placement="placement">
       <n-drawer-content title="会话统计" closable>
         <PcapConv :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapConv>
       </n-drawer-content>
     </n-drawer>
 
-    <n-drawer :mask-closable="false" v-model:show="showEndPoint" width="60%" :placement="placement">
+    <n-drawer :mask-closable="false" v-model:show="showEndPoint" width="800" :placement="placement">
       <n-drawer-content title="端点统计" closable>
         <EndPoint :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></EndPoint>
       </n-drawer-content>
     </n-drawer>
 
-    <n-drawer :mask-closable="false" v-model:show="showTraffic" width="60%" :placement="placement">
+    <n-drawer :mask-closable="false" v-model:show="showTraffic" width="80%" :placement="placement">
       <n-drawer-content title="流量图统计" closable>
-        <PcapTraffic></PcapTraffic>
+        <PcapTraffic :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapTraffic>
       </n-drawer-content>
     </n-drawer>
 
-    <n-drawer :mask-closable="false" v-model:show="showSum" width="60%" :placement="placement">
+    <n-drawer :mask-closable="false" v-model:show="showSum" width="600" :placement="placement">
       <n-drawer-content title="统计" closable>
-        <PcapSum></PcapSum>
+        <PcapSum :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapSum>
+      </n-drawer-content>
+    </n-drawer>
+
+    <n-drawer :mask-closable="false" v-model:show="showPcapIp" width="600" :placement="placement">
+      <n-drawer-content title="IP信息" closable>
+        <PcapIp :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapIp>
       </n-drawer-content>
     </n-drawer>
 

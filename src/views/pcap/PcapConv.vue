@@ -30,7 +30,7 @@ const tabList = [
   },
   {
     label: "Ethernet会话",
-    key: "Ethernet"
+    key: "eth"
   },
   // {
   //   label: "IEEE 802.11",

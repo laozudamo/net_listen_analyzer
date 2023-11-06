@@ -136,6 +136,11 @@ function setMenu () {
       key: "/pcap",
       icon: () => <SvgIcon name="capture" />,
     },
+    {
+      label: "回放",
+      key: "/playBack",
+      icon: () => <SvgIcon name="monitor" />,
+    },
     // {
     //   label: "模板",
     //   key: `${curRouteResouce.value}`,

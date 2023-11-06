@@ -178,6 +178,11 @@ export const constantRoutes = [{
             ]
         },
         {
+            path: "/playBack",
+            name: 'playBack',
+            component: () => import('@/views/playBack/index.vue'),
+        },
+        {
             path: "/resource",
             name: 'resource',
             component: () => import('@/views/resource/index.vue'),

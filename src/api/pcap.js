@@ -60,3 +60,53 @@ export function endPointInfo (params) {
     params,
   })
 }
+
+export function httpInfo (params) {
+  return request({
+    url: '/pcap/statistical/http_tree',
+    method: 'get',
+    params,
+  })
+}
+
+
+//统计分析包量和字节大小（io,stat）接口
+export function IoStatInfo (params) {
+  return request({
+    url: '/pcap/statistical/protocol_hierarchies',
+    method: 'get',
+    params,
+  })
+}
+
+
+//统计协议层次结构及包量（io,phs）接口
+export function IoPhsInfo (params) {
+  return request({
+    url: '/pcap/statistical/protocol_hierarchies',
+    method: 'get',
+    params,
+  })
+}
+
+
+// 统计IP 地址占比 
+
+/* 
+  必传， 参数说明： 统计IP地址占比 ip_hosts  / 统计源地址和目标地址占比 ip_srcdst ；如果是IPv6地址，则使用 ip6_srcdst
+*/
+export function ipInfo (params) {
+  return request({
+    url: '/pcap/statistical/protocol_hierarchies',
+    method: 'get',
+    params,
+  })
+}
+
+export function getIO (params) {
+  return request({
+    url: '/pcap/flow_graph',
+    method: 'get',
+    params,
+  })
+}
