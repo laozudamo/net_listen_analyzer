@@ -15,7 +15,6 @@ export function setPermission (app) {
         }
     })
 }
-
 // 加强截流函数
 export function throttle (fn, wait) {
     let previous = 0
