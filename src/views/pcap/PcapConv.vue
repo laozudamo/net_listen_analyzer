@@ -1,6 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { sessionInfo } from '@/api/pcap.js'
+import localforage from 'localforage'
+
+const myIndexedDB = localforage.createInstance({
+  name: 'myIndexedDB',
+})
+
 
 const props = defineProps({
   query: {
@@ -11,45 +17,49 @@ const props = defineProps({
 
 let content = ref(null)
 
-const tabList = [
+const tabList = ref([
   {
     label: "IPV4会话",
-    key: 'ip',
+    key: '0',
+    value: "ip",
+    content: ""
   },
   {
     label: "IPv6会话",
-    key: 'ipv6',
+    key: '1',
+    value: "ipv6",
+    content: ""
   },
   {
     label: "TCP会话",
-    key: 'tcp',
+    key: '2',
+    value: "tcp",
+    content: ""
   },
   {
     label: "UDP会话",
-    key: 'udp',
+    key: '3',
+    value: "udp",
+    content: ""
   },
   {
     label: "Ethernet会话",
-    key: "eth"
+    key: "4",
+    value: "eth",
+    content: ""
   },
-  // {
-  //   label: "IEEE 802.11",
-  //   key: "IEEE 802.11"
-  // },
-]
+])
 
 let loading = ref(false)
 
-async function getConInfo (protocol) {
-  loading.value = true
+async function getInfo (item, i) {
   try {
     let params = {
-      protocol,
+      protocol: item.value,
       ...props.query
     }
     let { data } = await sessionInfo(params)
-    content.value = data
-    loading.value = false
+    item.content = data
 
   } catch (error) {
     loading.value = false
@@ -57,20 +67,52 @@ async function getConInfo (protocol) {
   }
 }
 
-function changeTab (v) {
-  getConInfo(v)
+async function getAllData () {
+  const value = await myIndexedDB.getItem('pcapConv');
+
+  if (value) {
+    tabList.value = JSON.parse(value)
+    content.value = tabList.value[0].content
+    return
+  }
+
+  loading.value = true
+
+  // for (const item of tabList.value) {
+  //   await getInfo(item, item.key)
+  // }
+
+  await handleData()
+  content.value = tabList.value[0].content
+
+  loading.value = false
+  myIndexedDB.setItem("pcapConv", JSON.stringify(tabList.value))
 }
 
-onMounted(() => {
-  getConInfo('ip')
+async function handleData () {
+  loading.value = true
+  const promises = []
+  tabList.value.forEach((item, i) => {
+    let j = getInfo(item, item.key)
+    promises.push(j)
+  })
+  await Promise.allSettled(promises)
+  loading.value = false
+}
+
+function changeTab (i) {
+  content.value = tabList.value[i].content
+}
+
+onMounted(async () => {
+  await getAllData()
 })
 
+
 </script>
-
 <template>
-  <n-tabs @update:value="changeTab" size="small" type="line" default-value="ip">
+  <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
     <n-tab-pane v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
-
       <n-spin :show="loading">
         <template #description>
           加载中···

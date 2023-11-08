@@ -1,6 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { httpInfo } from '@/api/pcap.js'
+import localforage from 'localforage'
+
+const myIndexedDB = localforage.createInstance({
+  name: 'myIndexedDB',
+})
+
 
 const props = defineProps({
   query: {
@@ -11,52 +17,55 @@ const props = defineProps({
 
 let content = ref(null)
 
-const tabList = [
+const tabList = ref([
   {
     label: "状态",
     value: "http",
     type: 'stat',
-    key: "0"
+    key: "0",
+    content: ""
   },
   {
     label: "树状态",
     value: "http",
     type: 'tree',
     key: "1",
+    content: ""
   },
   {
     label: "URI请求路径",
     value: "http_req",
     type: 'tree',
     key: "2",
+    content: ""
   },
   {
     label: "请求URL",
     value: "http_seq",
     type: 'tree',
     key: "3",
+    content: ""
   },
   {
     label: "请求和响应",
     value: "http_srv",
     type: "tree",
-    key: "4"
+    key: "4",
+    content: ""
   },
-]
+])
 
 let loading = ref(false)
 
-async function getInfo (protocol, statistical_type) {
-  loading.value = true
+async function getInfo (item) {
   try {
     let params = {
-      protocol,
-      statistical_type,
+      protocol: item.value,
+      statistical_type: item.type,
       ...props.query
     }
     let { data } = await httpInfo(params)
-    content.value = data
-    loading.value = false
+    item.content = data
 
   } catch (error) {
     loading.value = false
@@ -64,14 +73,44 @@ async function getInfo (protocol, statistical_type) {
   }
 }
 
-function changeTab (v) {
-  let protocol = tabList[v].value
-  let statistical_type = tabList[v].type
-  getInfo(protocol, statistical_type)
+async function getAllData () {
+  const value = await myIndexedDB.getItem('pcapHttp');
+
+  if (value) {
+    tabList.value = JSON.parse(value)
+    content.value = tabList.value[0].content
+    return
+  }
+
+  // for (const item of tabList.value) {
+  //   await getInfo(item, item.key)
+  // }
+
+  await handleData()
+
+  content.value = tabList.value[0].content
+
+  loading.value = false
+  myIndexedDB.setItem("pcapHttp", JSON.stringify(tabList.value))
+}
+
+async function handleData () {
+  loading.value = true
+  const promises = []
+  tabList.value.forEach((item, i) => {
+    let j = getInfo(item, item.key)
+    promises.push(j)
+  })
+  await Promise.allSettled(promises)
+  loading.value = false
+}
+
+function changeTab (i) {
+  content.value = tabList.value[i].content
 }
 
 onMounted(() => {
-  getInfo("http", "stat")
+  getAllData()
 })
 
 </script>

@@ -2,7 +2,7 @@
 import { h, computed, ref, onMounted, reactive, nextTick } from "vue";
 import { NIcon } from "naive-ui";
 import { RouterLink, useRouter } from "vue-router";
-import { getData, pacpList, getDetail, filterList, expertInfo, sessionInfo } from '@/api/pcap.js'
+import { getData, pacpList, getDetail, filterList, expertInfo, sessionInfo, endPointInfo } from '@/api/pcap.js'
 import { createToaster } from "@meforma/vue-toaster";
 const toaster = createToaster({ type: 'error', position: 'top', duration: 1000 });
 
@@ -10,6 +10,16 @@ import { Splitpanes, Pane } from 'splitpanes'
 import { useElementSize } from '@vueuse/core'
 import 'splitpanes/dist/splitpanes.css'
 import { ArrowDownload16Filled as Down, ArrowExportUp24Filled as Up, ArrowLeft24Filled as Left, ArrowRight24Filled as Right } from "@vicons/fluent";
+
+
+import localforage from 'localforage'
+
+const myIndexedDB = localforage.createInstance({
+  name: 'myIndexedDB',
+})
+
+
+
 // import { getData, getDetail } from '@/api/pcap.js'
 
 import {
@@ -48,15 +58,15 @@ import {
 
 import { useStore } from "vuex";
 
-import PcapHttp from './PcapHttp.vue'
+import PcapHttp from './PcapHttp.vue';
 import PcapConv from './PcapConv.vue'
 import EndPoint from './EndPoint.vue'
 import PcapTraffic from './PcapTraffic.vue'
 import PcapSum from './PcapSum.vue'
 import PcapIp from './PcapIp.vue'
 
-const store = useStore();
-const router = useRouter();
+// const store = useStore();
+// const router = useRouter();
 
 let globalDisabled = ref(true)
 
@@ -181,14 +191,31 @@ const nodeProps = ({ option }) => {
           detailController.value = null
           show.value = false
         }
-
         globalDisabled.value = true
         handlePcapData(option)
+        clearStorage()
+        getExertInfo()
+        // getAllData()
+
         // bus.emit("getNodeData", option);
       }
     }
   };
 };
+
+function clearStorage () {
+  myIndexedDB.removeItem('tabList')
+  myIndexedDB.removeItem('expertInfo')
+  myIndexedDB.removeItem('pcapConv')
+  myIndexedDB.removeItem('pcapHttp')
+  myIndexedDB.removeItem('pcapIp')
+  myIndexedDB.removeItem('pcapSum')
+}
+
+// async function getErrorData () {
+
+//   myIndexedDB.setItem("tabList", JSON.stringify(tabList.value))
+// }
 
 onMounted(() => {
   GetpacpList()
@@ -249,30 +276,8 @@ let sumOptions = ref([
   },
 ])
 
-
-
-// const icmpOption = [
-//   {
-//     label: "状态",
-//     key: 1
-//   }
-// ]
-
 let threeData = ref(null)
 let codeData = ref(null)
-
-// async function scrollBottom () {
-//   const $xTable = xTable.value
-//   await $xTable.scrollToRow($xTable.getData(100))
-//   await $xTable.refreshScroll()
-// }
-
-// async function scrollTop () {
-//   const $xTable = xTable.value
-
-// await $xTable.scrollToRow($xTable.getData(0))
-// await $xTable.refreshScroll()
-// }
 
 const list = ref([])
 let total = ref(0)
@@ -385,10 +390,6 @@ function showPanel (v) {
   console.log('showPanel', v)
 }
 
-// function scroll (v) {
-//   console.log('scroll', v)
-// }
-
 let expertModel = ref(null)
 let expertInfos = ref(null)
 let expertController = ref(null)
@@ -401,16 +402,24 @@ const handleSelect = v => {
   }
   if (v === 1) {
     expertModel.value.show()
-    getExertInfo()
+    // getExertInfo()
   }
 }
 
 const clickExpert = () => {
   expertModel.value.show()
-  getExertInfo()
+  // getExertInfo()
 }
 
 async function getExertInfo () {
+
+  const value = await myIndexedDB.getItem('expertInfo');
+
+  if (value) {
+    expertInfos.value = JSON.parse(value)
+    return
+  }
+
   expertLoading.value = true
   expertInfos.value = null
   try {
@@ -424,6 +433,9 @@ async function getExertInfo () {
       file_name: query.file_name,
     }
     let { data } = await expertInfo(params, expertController.value)
+
+    myIndexedDB.setItem("expertInfo", JSON.stringify(data))
+
     expertInfos.value = data
     expertLoading.value = false
   } catch (error) {
@@ -457,14 +469,6 @@ const searchFile = () => {
 }
 
 
-
-let winSize = ref(100)
-
-function zoomAdd () {
-  // winSize.value += 0.1
-  // document.body.style.zoom = winSize.value
-}
-
 nextTick(() => {
   const $table = xTable.value
   const $toolbar = toolBar.value
@@ -472,7 +476,7 @@ nextTick(() => {
     $table.connect($toolbar)
   }
 })
-let showDrow = ref(false)
+// let showDrow = ref(false)
 
 let showHttp = ref(false)
 
@@ -486,6 +490,8 @@ let showTraffic = ref(false)
 
 let showPcapIp = ref(false)
 
+let placement = 'right'
+
 
 // let disable = computed(() => {
 //   if (query.pcap_path && query.pcap_name) {
@@ -495,7 +501,6 @@ let showPcapIp = ref(false)
 // })
 
 // let showEndPoint = ref(false)
-
 </script>
 
 <template>
@@ -668,7 +673,7 @@ let showPcapIp = ref(false)
       </pane>
     </splitpanes>
 
-    <TheModel title="专业信息" ref="expertModel" :showConfirm="false" width="1200px" height="680px">
+    <TheModel title="错误信息" ref="expertModel" :showConfirm="false" width="1200px" height="680px">
       <n-spin style="width: 100%;height: 100%;" :show="expertLoading" :delay="1000">
         <template #description>
           加载中...
@@ -680,11 +685,11 @@ let showPcapIp = ref(false)
       </n-spin>
     </TheModel>
 
-    <n-drawer :mask-closable="false" v-model:show="showDrow" width="80%" :placement="placement">
+    <!-- <n-drawer :mask-closable="false" v-model:show="showDrow" width="80%" :placement="placement">
       <n-drawer-content title="会话统计" closable>
         《斯通纳》是美国作家约翰·威廉姆斯在 1965 年出版的小说。
       </n-drawer-content>
-    </n-drawer>
+    </n-drawer> -->
 
     <n-drawer :mask-closable="false" v-model:show="showHttp" width="950" :placement="placement">
       <n-drawer-content title="HTTP分析" closable>
