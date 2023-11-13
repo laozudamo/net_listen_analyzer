@@ -257,6 +257,7 @@ let sumOptions = ref([
 
 let treeData = ref([])
 let codeData = ref(null)
+let initCode = ref([])
 let protocols = ref(null)
 
 const list = ref([])
@@ -342,21 +343,19 @@ let theData = ref([])
 
 function handleBinaryCode (binary) {
 
-  let str = binary.frame_raw[0]
+  let str = binary
 
   console.log('protocols.value.map', protocols.value, binary)
-  // theData.value = protocols.value.map(item => {
-  //   return binary[item]
-  // })
-  // console.log('2222', theData.value)
 
   let arr = []
-
   let j = str.length / 2
 
   for (let index = 0; index < j; index++) {
     let ele = str.slice(index * 2, index * 2 + 2)
-    arr.push(ele)
+    arr.push({
+      ele,
+      isActive: false,
+    })
   }
 
   return arr
@@ -380,14 +379,46 @@ async function currentChange (v) {
   let { data } = await getDetail(params, detailController.value)
 
 
-  treeData.value = handleThreeData(data.protocol_tree)
   // treeData.value = data.protocol_tree
+  treeData.value = handleTheTree(data.protocol_tree)
+  console.log('2222', treeData.value)
 
   protocols.value = data.protocols.map(item => item + '_row')
-  // codeData.value = handleBinaryCode(data.protocol_binary)
-  codeData.value = data.protocol_binary
+  codeData.value = handleBinaryCode(data.protocol_tree[0].binary[0])
+  initCode.value = handleBinaryCode(data.protocol_tree[0].binary[0])
+  // codeData.value = data.protocol_tree[0].binary[0]
+  // console.log(data.protocol_tree[0].binary[0])
 
   show.value = false
+}
+
+function handleTree (data) {
+  let obj = {}
+  if (data.children.length > 0) {
+    // 
+    obj = {
+      ...data,
+      children: handleTheTree(data.children),
+      isLeaf: false
+    }
+    return obj
+
+  } else {
+
+    obj = {
+      ...data,
+      isLeaf: true,
+    }
+
+    return obj
+  }
+
+}
+
+function handleTheTree (tree) {
+  return tree.map(item => {
+    return handleTree(item)
+  })
 }
 
 const searchEvent = () => {
@@ -541,7 +572,29 @@ let placement = 'right'
 const clickTree = ({ option }) => {
   return {
     onClick () {
-      console.log(option)
+      console.log(option.binary[1], option.binary[2])
+
+      let str = initCode.value.map(item => item.ele).join(',').replaceAll(',', '')
+      let flag = str.includes(option.binary[0])
+      if (flag) {
+        //   let codeArr = handleBinaryCode(option.binary[0])
+        let tmpArr = initCode.value.map((item, i) => {
+          // let hasVal = codeArr.find(v => item.ele === v.ele)
+          if (option.binary[1] <= i && i <= option.binary[1] + option.binary[2]) {
+            let obj = {
+              ele: item.ele,
+              isActive: true
+            }
+            return obj
+
+          } else {
+            return item
+          }
+        })
+
+        codeData.value = tmpArr
+      }
+      console.log("str", flag)
     }
   }
 }
@@ -622,7 +675,7 @@ const nodeProps = ({ option }) => {
                    
                     <n-button>统计源和目标占比</n-button> -->
 
-                    <n-button :disabled="globalDisabled" @click="showExpert = true">错误统计</n-button>
+                    <n-button :disabled="globalDisabled" @click="showExpert = true">专家统计</n-button>
                     <!-- <n-button @click="showTraffic = true">流量图</n-button> -->
                     <n-button :disabled="globalDisabled" @click="showPcapIp = true">IP信息</n-button>
                     <n-button :disabled="globalDisabled" @click="showSum = true">统计信息</n-button>
@@ -682,7 +735,8 @@ const nodeProps = ({ option }) => {
             <splitpanes v-else :push-other-panes="false" :dbl-click-splitter="false">
               <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="65">
                 <div style="padding: 20px;min-width:870px;">
-                  <n-tree :selectable="false" :node-props="clickTree" :multiple="false" block-line :data="treeData" />
+                  <n-tree key-filed="id" :selectable="true" label-field="key" :node-props="clickTree" :multiple="false"
+                    block-line :data="treeData" />
                 </div>
                 <!-- <div v-if="treeData" style="display: flex;justify-content: center;">
                   <img :src="caseimg" alt="">
@@ -696,13 +750,15 @@ const nodeProps = ({ option }) => {
                   <!-- <div>
                     行数
                   </div> -->
-                  <!-- <div style="width: 400px;min-width: 400px;">
+                  <div style="width: 400px;min-width: 400px;">
                     <n-grid x-gap="1" :cols="16">
-                      <n-grid-item v-for="ele in codeData" :key="ele">
-                        {{ ele }}
+                      <n-grid-item v-for="(e, i) in codeData" :key="i">
+                        <div :class="e.isActive ? 'active' : ''">
+                          {{ e.ele }}
+                        </div>
                       </n-grid-item>
                     </n-grid>
-                  </div> -->
+                  </div>
                   <!-- 
                   <div>
                     阿斯克
@@ -844,4 +900,8 @@ const nodeProps = ({ option }) => {
 //   overflow: auto !important;
 //   transform: scale(1);
 // }
+
+.active {
+  background-color: rgb(64, 157, 215)
+}
 </style>
