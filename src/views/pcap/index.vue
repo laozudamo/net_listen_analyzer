@@ -8,6 +8,7 @@ const toaster = createToaster({ type: 'error', position: 'top', duration: 1000 }
 
 import { Splitpanes, Pane } from 'splitpanes'
 import { useElementSize } from '@vueuse/core'
+import caseimg from '@/assets/img/case.png'
 import 'splitpanes/dist/splitpanes.css'
 import { ArrowDownload16Filled as Down, ArrowExportUp24Filled as Up, ArrowLeft24Filled as Left, ArrowRight24Filled as Right } from "@vicons/fluent";
 
@@ -17,8 +18,6 @@ import localforage from 'localforage'
 const myIndexedDB = localforage.createInstance({
   name: 'myIndexedDB',
 })
-
-
 
 // import { getData, getDetail } from '@/api/pcap.js'
 
@@ -57,13 +56,13 @@ import {
 } from "@vicons/carbon";
 
 import { useStore } from "vuex";
-
 import PcapHttp from './PcapHttp.vue';
 import PcapConv from './PcapConv.vue'
 import EndPoint from './EndPoint.vue'
 import PcapTraffic from './PcapTraffic.vue'
 import PcapSum from './PcapSum.vue'
 import PcapIp from './PcapIp.vue'
+import PcapExpertinfo from './PcapExpertinfo.vue'
 
 // const store = useStore();
 // const router = useRouter();
@@ -131,7 +130,7 @@ let show = ref(false)
 
 let pcapParams = {
   page: 1,
-  page_size: 10
+  page_size: 30
 }
 
 async function GetpacpList () {
@@ -182,26 +181,6 @@ function updatePrefixWithExpaned (_keys, _option, meta) {
   }
 }
 
-const nodeProps = ({ option }) => {
-  return {
-    onClick () {
-      if (!option.children && !option.disabled) {
-        if (detailController.value !== null) {
-          detailController.value.abort()
-          detailController.value = null
-          show.value = false
-        }
-        globalDisabled.value = true
-        handlePcapData(option)
-        clearStorage()
-        getExertInfo()
-        // getAllData()
-
-        // bus.emit("getNodeData", option);
-      }
-    }
-  };
-};
 
 function clearStorage () {
   myIndexedDB.removeItem('tabList')
@@ -276,8 +255,9 @@ let sumOptions = ref([
   },
 ])
 
-let threeData = ref(null)
+let treeData = ref([])
 let codeData = ref(null)
+let protocols = ref(null)
 
 const list = ref([])
 let total = ref(0)
@@ -306,7 +286,7 @@ function handlePcapData (data) {
 
 
   codeData.value = null
-  threeData.value = null
+  treeData.value = null
   filterName.value = ""
 
   loadData()
@@ -334,6 +314,54 @@ function loadData () {
 
 }
 
+
+function handleThreeData (tree) {
+  function traverse (nodes, index) {
+
+    let labels = Object.keys(nodes);
+    let obj = {
+      label: labels[0].trim(),
+      key: index + '' + labels[0],
+      children: null
+    };
+
+    let children = Object.values(nodes)[0];
+    if (Array.isArray(children) && children.length > 0) {
+      obj.children = children.map((child, i) => traverse(child, i));
+    }
+
+    return obj;
+  }
+
+  let data = tree.map((item, i) => traverse(item, i));
+
+  return data
+}
+
+let theData = ref([])
+
+function handleBinaryCode (binary) {
+
+  let str = binary.frame_raw[0]
+
+  console.log('protocols.value.map', protocols.value, binary)
+  // theData.value = protocols.value.map(item => {
+  //   return binary[item]
+  // })
+  // console.log('2222', theData.value)
+
+  let arr = []
+
+  let j = str.length / 2
+
+  for (let index = 0; index < j; index++) {
+    let ele = str.slice(index * 2, index * 2 + 2)
+    arr.push(ele)
+  }
+
+  return arr
+}
+
 async function currentChange (v) {
   show.value = true
   let params = {
@@ -351,8 +379,14 @@ async function currentChange (v) {
 
   let { data } = await getDetail(params, detailController.value)
 
-  threeData.value = data.protocol_tree
+
+  treeData.value = handleThreeData(data.protocol_tree)
+  // treeData.value = data.protocol_tree
+
+  protocols.value = data.protocols.map(item => item + '_row')
+  // codeData.value = handleBinaryCode(data.protocol_binary)
   codeData.value = data.protocol_binary
+
   show.value = false
 }
 
@@ -390,59 +424,59 @@ function showPanel (v) {
   console.log('showPanel', v)
 }
 
-let expertModel = ref(null)
+// let expertModel = ref(null)
 let expertInfos = ref(null)
 let expertController = ref(null)
 let expertLoading = ref(null)
 
-const handleSelect = v => {
-  if (query.value === null || loading.value === true) {
-    toaster.show("等待文件加载")
-    return
-  }
-  if (v === 1) {
-    expertModel.value.show()
-    // getExertInfo()
-  }
-}
+// const handleSelect = v => {
+//   if (query.value === null || loading.value === true) {
+//     toaster.show("等待文件加载")
+//     return
+//   }
+//   if (v === 1) {
+//     expertModel.value.show()
+//     // getExertInfo()
+//   }
+// }
 
-const clickExpert = () => {
-  expertModel.value.show()
-  // getExertInfo()
-}
+// const clickExpert = () => {
+// expertModel.value.show()
+// getExertInfo()
+// }
 
-async function getExertInfo () {
+// async function getExertInfo () {
 
-  const value = await myIndexedDB.getItem('expertInfo');
+//   const value = await myIndexedDB.getItem('expertInfo');
 
-  if (value) {
-    expertInfos.value = JSON.parse(value)
-    return
-  }
+//   if (value) {
+//     expertInfos.value = JSON.parse(value)
+//     return
+//   }
 
-  expertLoading.value = true
-  expertInfos.value = null
-  try {
-    if (expertController.value !== null) {
-      expertController.value.abort()
-      expertController.value = null
-    }
-    expertController.value = new AbortController()
-    let params = {
-      pcap_path: query.pcap_path,
-      file_name: query.file_name,
-    }
-    let { data } = await expertInfo(params, expertController.value)
+//   expertLoading.value = true
+//   expertInfos.value = null
+//   try {
+//     if (expertController.value !== null) {
+//       expertController.value.abort()
+//       expertController.value = null
+//     }
+//     expertController.value = new AbortController()
+//     let params = {
+//       pcap_path: query.pcap_path,
+//       file_name: query.file_name,
+//     }
+//     let { data } = await expertInfo(params, expertController.value)
 
-    myIndexedDB.setItem("expertInfo", JSON.stringify(data))
+//     myIndexedDB.setItem("expertInfo", JSON.stringify(data))
 
-    expertInfos.value = data
-    expertLoading.value = false
-  } catch (error) {
-    console.log(error)
-    expertLoading.value = false
-  }
-}
+//     expertInfos.value = data
+//     expertLoading.value = false
+//   } catch (error) {
+//     console.log(error)
+//     expertLoading.value = false
+//   }
+// }
 
 function thrackPacp (v) {
   console.log(v)
@@ -490,6 +524,8 @@ let showTraffic = ref(false)
 
 let showPcapIp = ref(false)
 
+let showExpert = ref(false)
+
 let placement = 'right'
 
 
@@ -501,6 +537,44 @@ let placement = 'right'
 // })
 
 // let showEndPoint = ref(false)
+
+const clickTree = ({ option }) => {
+  return {
+    onClick () {
+      console.log(option)
+    }
+  }
+}
+
+const nodeProps = ({ option }) => {
+  return {
+    onClick () {
+      if (!option.children && !option.disabled) {
+        if (detailController.value !== null) {
+          detailController.value.abort()
+          detailController.value = null
+          show.value = false
+        }
+        globalDisabled.value = true
+
+
+        show.value = true
+
+        treeData.value = []
+        codeData.value = null
+        show.value = false
+
+        handlePcapData(option)
+        clearStorage()
+        // getExertInfo()
+
+        // bus.emit("getNodeData", option);
+      }
+    }
+  };
+};
+
+
 </script>
 
 <template>
@@ -517,8 +591,8 @@ let placement = 'right'
             </BtnIcon>
           </div>
 
-          <n-tree :node-props="nodeProps" :on-update:expanded-keys="updatePrefixWithExpaned" :multiple="false" block-line
-            :data="listData" />
+          <n-tree :cancelable="false" :node-props="nodeProps" :on-update:expanded-keys="updatePrefixWithExpaned"
+            :multiple="false" block-line :data="listData" />
         </div>
       </pane>
 
@@ -536,48 +610,6 @@ let placement = 'right'
                     <ReaderOutline />
                   </BtnIcon>
 
-                  <!-- <n-divider vertical /> -->
-
-                  <!-- <n-button size="small" tertiary circle style="margin-left: 10px;" @click="scrollTop">
-                    <template #icon>
-                      <n-icon>
-                        <ArrowUpSharp />
-                      </n-icon>
-                    </template>
-                  </n-button> -->
-                  <!-- 
-                  <n-button size="small" tertiary circle style="margin-left: 10px;margin-right: 10px;"
-                    @click="scrollBottom">
-                    <template #icon>
-                      <n-icon>
-                        <ArrowDownSharp />
-                      </n-icon>
-                    </template>
-                  </n-button> -->
-
-                  <!-- <n-divider vertical />
-                  <n-button size="small" quaternary circle style="margin-left: 10px;" @click="zoomAdd">
-                    <template #icon>
-                      <n-icon>
-                        <ZoomIn />
-                      </n-icon>
-                    </template>
-                  </n-button>
-                  <n-button size="small" quaternary circle style="margin-left: 5px;">
-                    <template #icon>
-                      <n-icon>
-                        <ZoomOut />
-                      </n-icon>
-                    </template>
-                  </n-button>
-                  <n-button size="small" quaternary circle style="margin-left: 5px;">
-                    <template #icon>
-                      <n-icon>
-                        <ZoomReset />
-                      </n-icon>
-                    </template>
-                  </n-button> -->
-
                 </template>
 
                 <template #tools>
@@ -590,7 +622,7 @@ let placement = 'right'
                    
                     <n-button>统计源和目标占比</n-button> -->
 
-                    <n-button :disabled="globalDisabled" @click="clickExpert">错误统计</n-button>
+                    <n-button :disabled="globalDisabled" @click="showExpert = true">错误统计</n-button>
                     <!-- <n-button @click="showTraffic = true">流量图</n-button> -->
                     <n-button :disabled="globalDisabled" @click="showPcapIp = true">IP信息</n-button>
                     <n-button :disabled="globalDisabled" @click="showSum = true">统计信息</n-button>
@@ -640,28 +672,44 @@ let placement = 'right'
 
             </div>
           </pane>
+
           <pane min-size="5" max-size="95" size="40">
-            <n-spin style="width: 100%;height: 100%;" v-if="show" :show="show" :delay="1000">
+            <n-spin v-if="show" style="width: 100%;height: 100%;" :show="true" :delay="1000">
               <template #description>
                 加载中...
               </template>
             </n-spin>
-            <splitpanes :push-other-panes="false" :dbl-click-splitter="false">
+            <splitpanes v-else :push-other-panes="false" :dbl-click-splitter="false">
               <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="65">
-                <div style="white-space: pre-wrap;padding: 20px;min-width:870px;">
-                  {{ threeData }}
+                <div style="padding: 20px;min-width:870px;">
+                  <n-tree :selectable="false" :node-props="clickTree" :multiple="false" block-line :data="treeData" />
                 </div>
-                <div v-if="threeData === null">
+                <!-- <div v-if="treeData" style="display: flex;justify-content: center;">
+                  <img :src="caseimg" alt="">
                   <div style="font-size: 20px;color: #999; display: flex;justify-content: center;align-items: center;">
                     暂无数据
                   </div>
-                </div>
+                </div> -->
               </pane>
               <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="35">
-                <div style="white-space: pre-wrap;padding: 20px;margin-left: 20px;min-width: 530px;">
-                  {{ codeData }}
+                <div style="display: flex;">
+                  <!-- <div>
+                    行数
+                  </div> -->
+                  <!-- <div style="width: 400px;min-width: 400px;">
+                    <n-grid x-gap="1" :cols="16">
+                      <n-grid-item v-for="ele in codeData" :key="ele">
+                        {{ ele }}
+                      </n-grid-item>
+                    </n-grid>
+                  </div> -->
+                  <!-- 
+                  <div>
+                    阿斯克
+                  </div> -->
                 </div>
-                <div v-if="codeData === null">
+                <div v-if="codeData === null" style="display: flex;justify-content: center;">
+                  <img :src="caseimg" alt="">
                   <div style="font-size: 20px;color: #999; display: flex;justify-content: center;align-items: center;">
                     暂无数据
                   </div>
@@ -669,11 +717,13 @@ let placement = 'right'
               </pane>
             </splitpanes>
           </pane>
+
+
         </splitpanes>
       </pane>
     </splitpanes>
-
-    <TheModel title="错误信息" ref="expertModel" :showConfirm="false" width="1200px" height="680px">
+    <!-- 
+    <TheModel title="专家信息" ref="expertModel" :showConfirm="false" width="1200px" height="680px">
       <n-spin style="width: 100%;height: 100%;" :show="expertLoading" :delay="1000">
         <template #description>
           加载中...
@@ -683,13 +733,13 @@ let placement = 'right'
           {{ ele }}
         </div>
       </n-spin>
-    </TheModel>
+    </TheModel> -->
 
-    <!-- <n-drawer :mask-closable="false" v-model:show="showDrow" width="80%" :placement="placement">
-      <n-drawer-content title="会话统计" closable>
-        《斯通纳》是美国作家约翰·威廉姆斯在 1965 年出版的小说。
+    <n-drawer :mask-closable="false" v-model:show="showExpert" width="80%" :placement="placement">
+      <n-drawer-content title="专家信息" closable>
+        <PcapExpertinfo :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapExpertinfo>
       </n-drawer-content>
-    </n-drawer> -->
+    </n-drawer>
 
     <n-drawer :mask-closable="false" v-model:show="showHttp" width="950" :placement="placement">
       <n-drawer-content title="HTTP分析" closable>
@@ -698,13 +748,13 @@ let placement = 'right'
     </n-drawer>
 
 
-    <n-drawer :mask-closable="false" v-model:show="showConv" width="1000" :placement="placement">
+    <n-drawer :mask-closable="false" v-model:show="showConv" width="70%" :placement="placement">
       <n-drawer-content title="会话统计" closable>
         <PcapConv :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapConv>
       </n-drawer-content>
     </n-drawer>
 
-    <n-drawer :mask-closable="false" v-model:show="showEndPoint" width="800" :placement="placement">
+    <n-drawer :mask-closable="false" v-model:show="showEndPoint" width="1000" :placement="placement">
       <n-drawer-content title="端点统计" closable>
         <EndPoint :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></EndPoint>
       </n-drawer-content>
@@ -716,7 +766,7 @@ let placement = 'right'
       </n-drawer-content>
     </n-drawer>
 
-    <n-drawer :mask-closable="false" v-model:show="showSum" width="600" :placement="placement">
+    <n-drawer :mask-closable="false" v-model:show="showSum" width="700" :placement="placement">
       <n-drawer-content title="统计" closable>
         <PcapSum :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapSum>
       </n-drawer-content>

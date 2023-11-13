@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
-import { ipInfo } from '@/api/pcap.js'
+import { expertInfo } from '@/api/pcap.js'
 
 import localforage from 'localforage'
 
@@ -18,47 +18,53 @@ const props = defineProps({
 const xTable = ref(null)
 const toolBar = ref(null)
 
-// let content = ref(null)
-
 const tabList = ref([
   {
-    label: "IPv4地址占比",
+    label: "错误信息",
     key: '0',
-    value: 'ip_hosts',
+    value: "Errors",
+    title: "",
     content: ""
   },
 
   {
-    label: "IPv4源地址和目标地址占比",
-    value: 'ip_srcdst',
+    label: "警告信息",
     key: '1',
+    value: "Warns",
+    title: "",
     content: ""
   },
 
   {
-    label: "IPv6地址占比",
-    value: 'ipv6_hosts',
+    label: "关键信息",
     key: '2',
+    value: "Notes",
+    title: "",
     content: ""
   },
   {
-    label: "IPv6源地址和目标地址占比",
-    value: 'ipv6_srcdst',
+    label: "会话信息",
     key: '3',
+    value: "Chats",
+    title: "",
     content: ""
   },
 ])
 
 let loading = ref(false)
 
-async function getInfo (item) {
+async function getInfo () {
+  loading.value = true
   try {
     let params = {
-      protocol: item.value,
       ...props.query
     }
-    let { data } = await ipInfo(params)
-    item.content = data
+    let { data } = await expertInfo(params)
+    // console.log(data)
+
+    handleData(data)
+    loading.value = false
+    // item.content = data
 
   } catch (error) {
     loading.value = false
@@ -66,43 +72,33 @@ async function getInfo (item) {
   }
 }
 
+function handleData (data) {
+  tabList.value.forEach(item => {
+    let index = data.findIndex(ele => ele.key.includes(item.value))
+    let found = data.find(ele => ele.key.includes(item.value))
+    tabList.value[index].content = found.values
+    tabList.value[index].title = found.key
+  })
+}
 
 async function getAllData () {
-  const value = await myIndexedDB.getItem('pcapIp');
+  const value = await myIndexedDB.getItem('expertInfo');
 
   if (value) {
     tabList.value = JSON.parse(value)
     let data = tabList.value[0].content
-
     await xTable.value.loadData(data)
     return
   }
 
-  loading.value = true
-
-  // for (const item of tabList.value) {
-  //   await getInfo(item, item.key)
-  // }`
-  await handleData()
-
+  await getInfo()
   let data = tabList.value[0].content
   await xTable.value.loadData(data)
 
-  loading.value = false
-  myIndexedDB.setItem("pcapIp", JSON.stringify(tabList.value))
+  // loading.value = false
+  myIndexedDB.setItem("expertInfo", JSON.stringify(tabList.value))
 }
 
-
-async function handleData () {
-  loading.value = true
-  const promises = []
-  tabList.value.forEach((item, i) => {
-    let j = getInfo(item, item.key)
-    promises.push(j)
-  })
-  await Promise.allSettled(promises)
-  loading.value = false
-}
 
 
 function changeTab (i) {
@@ -128,6 +124,7 @@ onMounted(async () => {
 <template>
   <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
     <n-tab-pane v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
+      {{ tabList[i].title }}
     </n-tab-pane>
   </n-tabs>
 
@@ -139,13 +136,16 @@ onMounted(async () => {
     </template>
   </vxe-toolbar>
 
-  <vxe-table id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source
+  <vxe-table id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow :tooltip-config="{showAll: true}" keep-source
     ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
     :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
     :scroll-x="{ enabled: true, gt: 20 }">
-    <vxe-column field="协议(protocol)" title="协议(protocol)"></vxe-column>
-    <vxe-column field="大小(bytes)" title="大小(bytes)"></vxe-column>
-    <vxe-column field="帧数(frames)" title="帧数(frames)"></vxe-column>
+    <!-- <vxe-column field="协议(protocol)" title="协议(protocol)"></vxe-column>
+    <vxe-column field="大小(bytes)" title="大小(bytes)"></vxe-column> -->
+    <vxe-column field="出现次数(Frequency)" title="出现次数(Frequency)"></vxe-column>
+    <vxe-column field="分组(Group)" title="分组(Group)"></vxe-column>
+    <vxe-column field="协议(Protocol)" title="协议(Protocol)"></vxe-column>
+    <vxe-column field="概要(Summary)" title="概要(Summary)"></vxe-column>
   </vxe-table>
 </template>
 

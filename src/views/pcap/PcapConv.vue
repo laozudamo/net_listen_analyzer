@@ -1,22 +1,19 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick, reactive } from 'vue'
 import { sessionInfo } from '@/api/pcap.js'
 import localforage from 'localforage'
 
 const myIndexedDB = localforage.createInstance({
   name: 'myIndexedDB',
 })
-
-
 const props = defineProps({
   query: {
     type: Object,
     required: true
   }
 })
-
-let content = ref(null)
-
+const xTable = ref(null)
+const toolBar = ref(null)
 const tabList = ref([
   {
     label: "IPV4会话",
@@ -49,9 +46,7 @@ const tabList = ref([
     content: ""
   },
 ])
-
 let loading = ref(false)
-
 async function getInfo (item, i) {
   try {
     let params = {
@@ -69,22 +64,20 @@ async function getInfo (item, i) {
 
 async function getAllData () {
   const value = await myIndexedDB.getItem('pcapConv');
-
   if (value) {
     tabList.value = JSON.parse(value)
-    content.value = tabList.value[0].content
+    let data = tabList.value[0].content
+    await xTable.value.loadData(data)
     return
   }
-
   loading.value = true
 
   // for (const item of tabList.value) {
   //   await getInfo(item, item.key)
   // }
-
   await handleData()
-  content.value = tabList.value[0].content
-
+  let data = tabList.value[0].content
+  await xTable.value.loadData(data)
   loading.value = false
   myIndexedDB.setItem("pcapConv", JSON.stringify(tabList.value))
 }
@@ -100,33 +93,58 @@ async function handleData () {
   loading.value = false
 }
 
-function changeTab (i) {
-  content.value = tabList.value[i].content
+
+async function changeTab (i) {
+  let data = tabList.value[i].content
+
+  const $table = xTable.value
+  $table.loadData(data)
 }
+
+
+nextTick(() => {
+  const $table = xTable.value
+  const $toolbar = toolBar.value
+  if ($table && $toolbar) {
+    $table.connect($toolbar)
+  }
+})
 
 onMounted(async () => {
   await getAllData()
+
 })
 
 
 </script>
 <template>
   <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
-    <n-tab-pane v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
-      <n-spin :show="loading">
-        <template #description>
-          加载中···
-        </template>
-        <div v-if="!content" style="height: 100vh;white-space: pre-wrap;padding: 20px;margin-left: 20px;">
-          暂无数据
-        </div>
-        <div v-else style="height: 100vh;white-space: pre-wrap;padding: 20px;margin-left: 20px;">
-          {{ content }}
-        </div>
-      </n-spin>
-
+    <n-tab-pane display-directive="show" v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
     </n-tab-pane>
   </n-tabs>
+  <vxe-toolbar ref="toolBar" :custom="true">
+    <template #tools>
+      <vxe-input  style="width: 500px;margin-right: 5px;margin-left: 20px;" v-model="filterName"
+        type="search" placeholder="试试全表搜索"></vxe-input>
+      <n-button  style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
+    </template>
+  </vxe-toolbar>
+
+  <vxe-table id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source
+    ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
+    :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
+    :scroll-x="{ enabled: true, gt: 20 }">
+    <vxe-column field="Address A" width="100" title="Address A"></vxe-column>
+    <vxe-column field="Address B" width="120" title="Address B"></vxe-column>
+    <vxe-column field="Packets" width="120" title="Packets"></vxe-column>
+    <vxe-column field="Bytes" width="120" title="Bytes"></vxe-column>
+    <vxe-column field="Packets A -> B" width="100" title="Packets A -> B"></vxe-column>
+    <vxe-column field="Bytes A -> B" width="120" title="Bytes A -> B"></vxe-column>
+    <vxe-column field="Packets B -> A" title="Packets B -> A"></vxe-column>
+    <vxe-column field="Bytes B -> A" title="Bytes B -> A"></vxe-column>
+    <vxe-column field="Rel Start" title="Rel Start"></vxe-column>
+    <vxe-column field="Duration" title="Duration"></vxe-column>
+  </vxe-table>
 </template>
 
 <style lang="scss" scoped></style>

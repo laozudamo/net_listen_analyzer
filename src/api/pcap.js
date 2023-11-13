@@ -35,12 +35,19 @@ export function filterList (params) {
   })
 }
 
-export function expertInfo (params, controller) {
+// export function expertInfo (params, controller) {
+//   return request({
+//     url: 'pcap/expert',
+//     method: 'get',
+//     params,
+//     signal: controller.signal
+//   })
+// }
+export function expertInfo (params) {
   return request({
     url: 'pcap/expert',
     method: 'get',
     params,
-    signal: controller.signal
   })
 }
 
@@ -73,7 +80,7 @@ export function httpInfo (params) {
 //统计分析包量和字节大小（io,stat）接口
 export function IoStatInfo (params) {
   return request({
-    url: '/pcap/statistical/protocol_hierarchies',
+    url: '/pcap/statistical/io_stat',
     method: 'get',
     params,
   })
@@ -83,7 +90,7 @@ export function IoStatInfo (params) {
 //统计协议层次结构及包量（io,phs）接口
 export function IoPhsInfo (params) {
   return request({
-    url: '/pcap/statistical/protocol_hierarchies',
+    url: 'pcap/statistical/io_phs',
     method: 'get',
     params,
   })
@@ -95,9 +102,11 @@ export function IoPhsInfo (params) {
 /* 
   必传， 参数说明： 统计IP地址占比 ip_hosts  / 统计源地址和目标地址占比 ip_srcdst ；如果是IPv6地址，则使用 ip6_srcdst
 */
+
+// pcap/statistical/ip_proportion?pcap_path=pcap_file&file_name=ccc.pcap&protocol=ip_hosts&display_filter=
 export function ipInfo (params) {
   return request({
-    url: '/pcap/statistical/protocol_hierarchies',
+    url: '/pcap/statistical/ip_proportion',
     method: 'get',
     params,
   })

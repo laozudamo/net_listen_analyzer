@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, nextTick, reactive } from 'vue'
 import { endPointInfo } from '@/api/pcap.js'
 import localforage from 'localforage'
 
@@ -14,7 +14,8 @@ const props = defineProps({
   }
 })
 
-let content = ref(null)
+const xTable = ref(null)
+const toolBar = ref(null)
 
 const tabList = ref([
   {
@@ -71,7 +72,9 @@ async function getAllData () {
 
   if (value) {
     tabList.value = JSON.parse(value)
-    content.value = tabList.value[0].content
+    let data = tabList.value[0].content
+
+    await xTable.value.loadData(data)
     return
   }
 
@@ -81,7 +84,9 @@ async function getAllData () {
   //   await getInfo(item, item.key)
   // }
   await handleData()
-  content.value = tabList.value[0].content
+  let data = tabList.value[0].content
+
+  await xTable.value.loadData(data)
 
   loading.value = false
   myIndexedDB.setItem("tabList", JSON.stringify(tabList.value))
@@ -98,9 +103,24 @@ async function handleData () {
   loading.value = false
 }
 
+let currentTab = ref(0)
+
 function changeTab (i) {
-  content.value = tabList.value[i].content
+  let data = tabList.value[i].content
+
+  currentTab.value = i
+
+  const $table = xTable.value
+  $table.loadData(data)
 }
+
+nextTick(() => {
+  const $table = xTable.value
+  const $toolbar = toolBar.value
+  if ($table && $toolbar) {
+    $table.connect($toolbar)
+  }
+})
 
 onMounted(async () => {
   await getAllData()
@@ -112,7 +132,7 @@ onMounted(async () => {
 <template>
   <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
     <n-tab-pane display-directive="show" v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
-      <n-spin :show="loading">
+      <!-- <n-spin :show="loading">
         <template #description>
           加载中···
         </template>
@@ -123,10 +143,34 @@ onMounted(async () => {
         <div v-else style="height: 100vh;white-space: pre-wrap;padding: 20px;margin-left: 20px;">
           {{ content }}
         </div>
-      </n-spin>
+      </n-spin> -->
 
     </n-tab-pane>
   </n-tabs>
+  <vxe-toolbar ref="toolBar" :custom="true">
+    <template #tools>
+      <vxe-input  style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName"
+        type="search" placeholder="试试全表搜索"></vxe-input>
+      <n-button  style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
+    </template>
+  </vxe-toolbar>
+
+  <vxe-table id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source
+    ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
+    :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
+    :scroll-x="{ enabled: true, gt: 20 }">
+    <vxe-column field="Address" title="Address"></vxe-column>
+    <vxe-column field="Packets" title="Packets"></vxe-column>
+    <vxe-column field="Bytes" title="Bytes"></vxe-column>
+    <vxe-column field="Tx Packets" title="Tx Packets"></vxe-column>
+    <vxe-column field="Tx Bytes" title="Tx Bytes"></vxe-column>
+    <vxe-column field="Rx Packets" title="Rx Packets"></vxe-column>
+    <vxe-column field="Rx Bytes" title="Rx Bytes"></vxe-column>
+    <vxe-column field="Country" title="Country" v-if="currentTab == 0 || currentTab == 1"></vxe-column>
+    <vxe-column field="City" title="City" v-if="currentTab == 0 || currentTab == 1"></vxe-column>
+    <vxe-column field="As Number" title="As Number" v-if="currentTab == 0 || currentTab == 1"></vxe-column>
+    <vxe-column field="As Organization" title="As Organization" v-if="currentTab == 0 || currentTab == 1"></vxe-column>
+  </vxe-table>
 </template>
 
 <style lang="scss" scoped></style>
