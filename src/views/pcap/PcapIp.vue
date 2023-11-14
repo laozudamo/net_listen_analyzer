@@ -66,7 +66,6 @@ async function getInfo (item) {
   }
 }
 
-
 async function getAllData () {
   const value = await myIndexedDB.getItem('pcapIp');
 
@@ -91,7 +90,6 @@ async function getAllData () {
   loading.value = false
   myIndexedDB.setItem("pcapIp", JSON.stringify(tabList.value))
 }
-
 
 async function handleData () {
   loading.value = true
@@ -143,9 +141,15 @@ onMounted(async () => {
     ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
     :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
     :scroll-x="{ enabled: true, gt: 20 }">
-    <vxe-column field="协议(protocol)" title="协议(protocol)"></vxe-column>
-    <vxe-column field="大小(bytes)" title="大小(bytes)"></vxe-column>
-    <vxe-column field="帧数(frames)" title="帧数(frames)"></vxe-column>
+    <vxe-column field="Topic / Item" title="Topic / Item"></vxe-column>
+    <vxe-column field="Burst Rate" title="Burst Rate"></vxe-column>
+    <vxe-column field="Burst Start" title="Burst Start"></vxe-column>
+    <vxe-column field="Rate (ms)" title="Rate (ms)"></vxe-column>
+    <vxe-column field="Percent" title="Percent"></vxe-column>
+    <vxe-column field="Min Val" title="Min Val"></vxe-column>
+    <vxe-column field="Max Val" title="Max Val"></vxe-column>
+    <vxe-column field="Average" title="Average"></vxe-column>
+    <vxe-column field="Count" title="Count"></vxe-column>
   </vxe-table>
 </template>
 

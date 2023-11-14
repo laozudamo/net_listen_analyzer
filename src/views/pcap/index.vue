@@ -580,7 +580,7 @@ const clickTree = ({ option }) => {
         //   let codeArr = handleBinaryCode(option.binary[0])
         let tmpArr = initCode.value.map((item, i) => {
           // let hasVal = codeArr.find(v => item.ele === v.ele)
-          if (option.binary[1] <= i && i <= option.binary[1] + option.binary[2]) {
+          if (option.binary[1] <= i && i <= option.binary[1] + option.binary[2] - 1) {
             let obj = {
               ele: item.ele,
               isActive: true
@@ -828,7 +828,7 @@ const nodeProps = ({ option }) => {
       </n-drawer-content>
     </n-drawer>
 
-    <n-drawer :mask-closable="false" v-model:show="showPcapIp" width="600" :placement="placement">
+    <n-drawer :mask-closable="false" v-model:show="showPcapIp" width="1200" :placement="placement">
       <n-drawer-content title="IP信息" closable>
         <PcapIp :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapIp>
       </n-drawer-content>

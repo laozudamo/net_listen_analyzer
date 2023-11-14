@@ -112,8 +112,12 @@ async function getPhsInfo (item) {
   }
 }
 
+let current = ref(0)
+
 function changeTab (i) {
   let data = tabList.value[i].content
+
+  current.value = i
 
   const $table = xTable.value
   $table.loadData(data)
@@ -150,9 +154,10 @@ onMounted(() => {
     ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
     :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
     :scroll-x="{ enabled: true, gt: 20 }">
-    <vxe-column field="协议(protocol)" title="协议(protocol)"></vxe-column>
-    <vxe-column field="大小(bytes)" title="大小(bytes)"></vxe-column>
+    <vxe-column field="间隔(interval)" v-if="current == 0" title="间隔(interval)"></vxe-column>
+    <vxe-column field="协议(protocol)" v-else title="协议(protocol)"></vxe-column>
     <vxe-column field="帧数(frames)" title="帧数(frames)"></vxe-column>
+    <vxe-column field="大小(bytes)" title="大小(bytes)"></vxe-column>
   </vxe-table>
 </template>
 
