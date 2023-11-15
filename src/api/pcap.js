@@ -119,3 +119,27 @@ export function getIO (params) {
     params,
   })
 }
+
+export function logInfo (params) {
+  return request({
+    url: 'devices/logs/info/list',
+    method: 'get',
+    params,
+  })
+}
+
+
+export function trackList () {
+  return request({
+    url: 'devices/trace/flow/list',
+    method: 'get',
+  })
+}
+
+export function trackData (params) {
+  return request({
+    url: 'pcap/trace/flow',
+    method: 'get',
+    params
+  })
+}

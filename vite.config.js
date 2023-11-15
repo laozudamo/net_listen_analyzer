@@ -37,7 +37,7 @@ export default defineConfig({
   server: {
     // hmr: true,
     host: true,
-    // port: 9001,
+    port: 5177,
   },
   build: {
     target: ['edge90', 'chrome90', 'firefox90', 'safari15'],

@@ -2,7 +2,7 @@
 import { h, computed, ref, onMounted, reactive, nextTick } from "vue";
 import { NIcon } from "naive-ui";
 import { RouterLink, useRouter } from "vue-router";
-import { getData, pacpList, getDetail, filterList, expertInfo, sessionInfo, endPointInfo } from '@/api/pcap.js'
+import { getData, pacpList, getDetail, filterList, expertInfo, sessionInfo, endPointInfo, trackList } from '@/api/pcap.js'
 import { createToaster } from "@meforma/vue-toaster";
 const toaster = createToaster({ type: 'error', position: 'top', duration: 1000 });
 
@@ -158,7 +158,6 @@ async function GetpacpList () {
     })
     console.log("tmpData", tmpData)
     listData.value = tmpData
-    console.log("23", tmpData)
   } catch (error) {
     console.log(error)
   }
@@ -196,9 +195,10 @@ function clearStorage () {
 //   myIndexedDB.setItem("tabList", JSON.stringify(tabList.value))
 // }
 
-onMounted(() => {
-  GetpacpList()
+onMounted(async () => {
+  await GetpacpList()
 })
+
 
 let options = reactive([
   [
@@ -211,18 +211,51 @@ let options = reactive([
   ]
 ])
 
+
+async function getTrackList () {
+  try {
+    let { data } = await trackList()
+    options[0] = data.map((item, i) => {
+      return {
+        ...item,
+        code: item.protocol.toLowerCase(),
+        name: item.protocol,
+        disabled: true
+      }
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+
+
 const menuConfig = reactive({
   body: {
     options: options,
   },
-  visibleMethod: v => {
+
+  visibleMethod: async v => {
+    await xTable.value.clearCurrentRow()
+    await xTable.value.setCurrentRow(v.row)
+
     options[0].forEach(item => {
       item.disabled = true
-      if (v.row.protocol === item.code) {
+    })
+
+    if (v.row.idx !== currentRow.value) {
+      currentRow.value = v.row.idx
+      await changeCur(v)
+    }
+
+    options[0].forEach(item => {
+      item.disabled = true
+      let hasEle = protocols.value.find(protocol => protocol == item.code)
+      if (hasEle) {
         item.disabled = false;
       }
     })
-    return true
+    // return false
   }
 })
 
@@ -232,8 +265,10 @@ const pagerConfig = reactive({
   pageSizes: [5, 10, 15, 20, 50, 100, 200, 500, 1000]
 })
 
+let currentRow = ref(null)
+
 const midEl = ref(null)
-const midElementSize = useElementSize(midEl)
+// const midElementSize = useElementSize(midEl)
 
 const xTable = ref(null)
 const toolBar = ref(null)
@@ -260,6 +295,10 @@ let codeData = ref(null)
 let initCode = ref([])
 let protocols = ref(null)
 
+let binaryWall = ref(null)
+let AsicCode = ref(null)
+let initAsicCode = ref(null)
+
 const list = ref([])
 let total = ref(0)
 let pageNum = ref(1)
@@ -284,7 +323,6 @@ function handlePcapData (data) {
 
   query.pcap_path = data.pcap_path
   query.file_name = data.label
-
 
   codeData.value = null
   treeData.value = null
@@ -345,7 +383,7 @@ function handleBinaryCode (binary) {
 
   let str = binary
 
-  console.log('protocols.value.map', protocols.value, binary)
+  // console.log('protocols.value.map', protocols.value, binary)
 
   let arr = []
   let j = str.length / 2
@@ -361,7 +399,22 @@ function handleBinaryCode (binary) {
   return arr
 }
 
+let tmpColor = ref(null)
 async function currentChange (v) {
+  // tmpColor = v.row.color
+  // list.value.forEach(item => {
+  //   if (item.color = "red") {
+  //     item.color = tmpColor
+  //   }
+  // })
+
+  // await xTable.value.loadData(list.value)
+  // v.row.color = 'red'
+  currentRow.value = v.row.idx
+  changeCur(v)
+}
+
+async function changeCur (v) {
   show.value = true
   let params = {
     pcap_path: query.pcap_path,
@@ -375,21 +428,34 @@ async function currentChange (v) {
   }
 
   detailController.value = new AbortController()
-
   let { data } = await getDetail(params, detailController.value)
 
-
-  // treeData.value = data.protocol_tree
   treeData.value = handleTheTree(data.protocol_tree)
-  console.log('2222', treeData.value)
+  AsicCode.value = handAsicCode(data.protocol_tree[0].binary[5])
+  initAsicCode.value = handAsicCode(data.protocol_tree[0].binary[5])
 
-  protocols.value = data.protocols.map(item => item + '_row')
+  protocols.value = data.protocols
   codeData.value = handleBinaryCode(data.protocol_tree[0].binary[0])
   initCode.value = handleBinaryCode(data.protocol_tree[0].binary[0])
-  // codeData.value = data.protocol_tree[0].binary[0]
-  // console.log(data.protocol_tree[0].binary[0])
-
+  binaryWall.value = data.protocol_tree[0].binary_wall
   show.value = false
+}
+
+function handAsicCode (data) {
+  let str = data
+
+  let arr = []
+  // let j = str.length / 1
+
+  for (let index = 0; index < str.length; index++) {
+    let ele = str.slice(index, index + 1)
+    arr.push({
+      ele,
+      isActive: false,
+    })
+  }
+
+  return arr
 }
 
 function handleTree (data) {
@@ -572,30 +638,54 @@ let placement = 'right'
 const clickTree = ({ option }) => {
   return {
     onClick () {
-      console.log(option.binary[1], option.binary[2])
-
-      let str = initCode.value.map(item => item.ele).join(',').replaceAll(',', '')
-      let flag = str.includes(option.binary[0])
-      if (flag) {
-        //   let codeArr = handleBinaryCode(option.binary[0])
-        let tmpArr = initCode.value.map((item, i) => {
-          // let hasVal = codeArr.find(v => item.ele === v.ele)
-          if (option.binary[1] <= i && i <= option.binary[1] + option.binary[2] - 1) {
-            let obj = {
-              ele: item.ele,
-              isActive: true
-            }
-            return obj
-
-          } else {
-            return item
-          }
-        })
-
-        codeData.value = tmpArr
-      }
-      console.log("str", flag)
+      // console.log(option.binary[1], option.binary[2])
+      handleCodeTreeClick(option)
+      handleAsicTreeClick(option)
     }
+  }
+}
+
+function handleCodeTreeClick (option) {
+
+  let str = initCode.value.map(item => item.ele).join(',').replaceAll(',', '')
+  let flag = str.includes(option.binary[0])
+  if (flag) {
+    let tmpArr = initCode.value.map((item, i) => {
+      if (option.binary[1] <= i && i <= option.binary[1] + option.binary[2] - 1) {
+        let obj = {
+          ele: item.ele,
+          isActive: true
+        }
+        return obj
+
+      } else {
+        return item
+      }
+    })
+
+    codeData.value = tmpArr
+  }
+}
+
+function handleAsicTreeClick (option) {
+
+  let str = initCode.value.map(item => item.ele).join(',').replaceAll(',', '')
+  let flag = str.includes(option.binary[0])
+  if (flag) {
+    let tmpArr = initAsicCode.value.map((item, i) => {
+      if (option.binary[1] <= i && i <= option.binary[1] + option.binary[2] - 1) {
+        let obj = {
+          ele: item.ele,
+          isActive: true
+        }
+        return obj
+
+      } else {
+        return item
+      }
+    })
+
+    AsicCode.value = tmpArr
   }
 }
 
@@ -615,10 +705,18 @@ const nodeProps = ({ option }) => {
 
         treeData.value = []
         codeData.value = null
+
+        currentRow.value = false
+
         show.value = false
+
+        // tmpColor.value = null
 
         handlePcapData(option)
         clearStorage()
+
+        getTrackList()
+
         // getExertInfo()
 
         // bus.emit("getNodeData", option);
@@ -627,6 +725,17 @@ const nodeProps = ({ option }) => {
   };
 };
 
+function getCurrentColumn (val) {
+  console.log("getCurrentColumn", val);
+}
+
+
+const rowStyle = ({ row }) => {
+  return {
+    backgroundColor: row.color,
+    color: "#000000"
+  }
+}
 
 </script>
 
@@ -699,19 +808,29 @@ const nodeProps = ({ option }) => {
                 </template>
               </vxe-toolbar>
 
-              <vxe-table id="idx" :custom-config="{ storage: true }" :pagerConfig="pagerConfig" size="mini"
-                :menu-config="menuConfig" @menu-click="showPanel" @current-change="currentChange" :loading="loading"
-                show-overflow keep-source ref="xTable" border height="500"
+              <vxe-table :border="false" id="idx" :custom-config="{ storage: true }" :pagerConfig="pagerConfig"
+                size="mini" :menu-config="menuConfig" @menu-click="showPanel" @current-change="currentChange"
+                :loading="loading" show-overflow :keep-source="false" ref="xTable" height="500"
                 :row-config="{ isHover: true, isCurrent: true, useKey: true }"
                 :column-config="{ useKey: true, resizable: true }"
-                :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }" :scroll-x="{ enabled: true, gt: 20 }">
-                <vxe-column field="idx" width="100" title="序号"></vxe-column>
-                <vxe-column field="time" width="120" title="时间"></vxe-column>
-                <vxe-column field="source" width="250" title="源"></vxe-column>
-                <vxe-column field="dst" width="250" title="目标"></vxe-column>
-                <vxe-column field="protocol" width="100" title="协议"></vxe-column>
-                <vxe-column field="len" width="100" title="长度"></vxe-column>
-                <vxe-column field="info" title="信息"></vxe-column>
+                :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: false }" :scroll-x="{ enabled: true, gt: 20 }">
+                <vxe-column field="idx" width="100" title="序号">
+                  <template #default="{ row }">
+                    <div :style="{ background: row.color }">{{ row.idx }}</div>
+                  </template>
+                </vxe-column>
+                <vxe-column field="time" width="120" title="时间">
+                </vxe-column>
+                <vxe-column field="source" width="250" title="源">
+                </vxe-column>
+                <vxe-column field="dst" width="250" title="目标">
+                </vxe-column>
+                <vxe-column field="protocol" width="100" title="协议">
+                </vxe-column>
+                <vxe-column field="len" width="100" title="长度">
+                </vxe-column>
+                <vxe-column field="info" title="信息">
+                </vxe-column>
               </vxe-table>
 
               <div style="display: flex;justify-content: flex-end;margin-top: 5px;align-items: center;">
@@ -735,6 +854,8 @@ const nodeProps = ({ option }) => {
             <splitpanes v-else :push-other-panes="false" :dbl-click-splitter="false">
               <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="65">
                 <div style="padding: 20px;min-width:870px;">
+                  <!-- <router-link tag="a" target="_blank" to="/pcap">第一种新窗口打开页面</router-link> -->
+
                   <n-tree key-filed="id" :selectable="true" label-field="key" :node-props="clickTree" :multiple="false"
                     block-line :data="treeData" />
                 </div>
@@ -746,10 +867,12 @@ const nodeProps = ({ option }) => {
                 </div> -->
               </pane>
               <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="35">
-                <div style="display: flex;">
-                  <!-- <div>
-                    行数
-                  </div> -->
+                <div style="display: flex;padding: 0px;height: 100%;">
+                  <div style="margin-right: 20px;">
+                    <div style="background-color: #e7e5e5;padding: 0px 10px;" v-for="line in binaryWall" :key="line">
+                      {{ line }}
+                    </div>
+                  </div>
                   <div style="width: 400px;min-width: 400px;">
                     <n-grid x-gap="1" :cols="16">
                       <n-grid-item v-for="(e, i) in codeData" :key="i">
@@ -759,10 +882,16 @@ const nodeProps = ({ option }) => {
                       </n-grid-item>
                     </n-grid>
                   </div>
-                  <!-- 
-                  <div>
-                    阿斯克
-                  </div> -->
+
+                  <div style="margin-left: 15px;">
+                    <n-grid x-gap="1" :cols="16">
+                      <n-grid-item v-for="(code, i) in AsicCode" :key="i">
+                        <div :class="code.isActive ? 'active' : ''">
+                          {{ code.ele }}
+                        </div>
+                      </n-grid-item>
+                    </n-grid>
+                  </div>
                 </div>
                 <div v-if="codeData === null" style="display: flex;justify-content: center;">
                   <img :src="caseimg" alt="">
@@ -902,6 +1031,10 @@ const nodeProps = ({ option }) => {
 // }
 
 .active {
-  background-color: rgb(64, 157, 215)
+  background-color: rgb(114, 139, 220)
+}
+
+:deep.vxe-table--render-default .vxe-body--row.row--current {
+    background-color: rgb(6, 158, 240)!important;
 }
 </style>
