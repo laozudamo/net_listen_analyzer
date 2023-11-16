@@ -101,7 +101,6 @@ async function changeTab (i) {
   $table.loadData(data)
 }
 
-
 nextTick(() => {
   const $table = xTable.value
   const $toolbar = toolBar.value
@@ -112,9 +111,7 @@ nextTick(() => {
 
 onMounted(async () => {
   await getAllData()
-
 })
-
 
 </script>
 <template>
@@ -122,28 +119,28 @@ onMounted(async () => {
     <n-tab-pane display-directive="show" v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
     </n-tab-pane>
   </n-tabs>
-  <vxe-toolbar ref="toolBar" :custom="true">
+  <vxe-toolbar ref="toolBar" :export="false" :custom="true">
     <template #tools>
       <vxe-input  style="width: 500px;margin-right: 5px;margin-left: 20px;" v-model="filterName"
         type="search" placeholder="试试全表搜索"></vxe-input>
-      <n-button  style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
+      <n-button  style="margin-left: 10px;margin-right: 10px;" @click="searchEvent">搜索</n-button>
     </template>
   </vxe-toolbar>
 
-  <vxe-table id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source
+  <vxe-table :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source
     ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
     :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
     :scroll-x="{ enabled: true, gt: 20 }">
-    <vxe-column field="Address A" width="100" title="Address A"></vxe-column>
-    <vxe-column field="Address B" width="120" title="Address B"></vxe-column>
-    <vxe-column field="Packets" width="120" title="Packets"></vxe-column>
-    <vxe-column field="Bytes" width="120" title="Bytes"></vxe-column>
-    <vxe-column field="Packets A -> B" width="100" title="Packets A -> B"></vxe-column>
-    <vxe-column field="Bytes A -> B" width="120" title="Bytes A -> B"></vxe-column>
-    <vxe-column field="Packets B -> A" title="Packets B -> A"></vxe-column>
-    <vxe-column field="Bytes B -> A" title="Bytes B -> A"></vxe-column>
-    <vxe-column field="Rel Start" title="Rel Start"></vxe-column>
-    <vxe-column field="Duration" title="Duration"></vxe-column>
+    <vxe-column field="Address A" width="100" title="Address A" sortable></vxe-column>
+    <vxe-column field="Address B" width="120" title="Address B" sortable></vxe-column>
+    <vxe-column field="Packets" width="120" title="Packets" sortable></vxe-column>
+    <vxe-column field="Bytes" width="120" title="Bytes" sortable></vxe-column>
+    <vxe-column field="Packets A -> B" width="100" title="Packets A -> B" sortable></vxe-column>
+    <vxe-column field="Bytes A -> B" width="120" title="Bytes A -> B" sortable></vxe-column>
+    <vxe-column field="Packets B -> A" title="Packets B -> A" sortable></vxe-column>
+    <vxe-column field="Bytes B -> A" title="Bytes B -> A" sortable></vxe-column>
+    <vxe-column field="Rel Start" title="Rel Start" sortable></vxe-column>
+    <vxe-column field="Duration" title="Duration" sortable></vxe-column>
   </vxe-table>
 </template>
 

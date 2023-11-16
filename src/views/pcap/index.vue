@@ -63,6 +63,7 @@ import PcapTraffic from './PcapTraffic.vue'
 import PcapSum from './PcapSum.vue'
 import PcapIp from './PcapIp.vue'
 import PcapExpertinfo from './PcapExpertinfo.vue'
+import PcapIO from './PcapIO.vue'
 
 // const store = useStore();
 // const router = useRouter();
@@ -188,6 +189,7 @@ function clearStorage () {
   myIndexedDB.removeItem('pcapHttp')
   myIndexedDB.removeItem('pcapIp')
   myIndexedDB.removeItem('pcapSum')
+  myIndexedDB.removeItem('pcapIO')
 }
 
 // async function getErrorData () {
@@ -635,6 +637,8 @@ let showPcapIp = ref(false)
 
 let showExpert = ref(false)
 
+let showIO = ref(false)
+
 let placement = 'right'
 
 
@@ -749,7 +753,7 @@ function clear () {
 
 const rowStyle = ({ row }) => {
   return {
-    backgroundColor: row.color,
+    // backgroundColor: row.color,
     color: "#000000"
   }
 }
@@ -804,7 +808,8 @@ const rowStyle = ({ row }) => {
                     <n-button :disabled="globalDisabled" @click="showExpert = true">专家统计</n-button>
                     <!-- <n-button @click="showTraffic = true">流量图</n-button> -->
                     <n-button :disabled="globalDisabled" @click="showPcapIp = true">IP信息</n-button>
-                    <n-button :disabled="globalDisabled" @click="showSum = true">统计信息</n-button>
+                    <n-button :disabled="globalDisabled" @click="showSum = true">层次结构</n-button>
+                    <n-button :disabled="globalDisabled" @click="showIO = true">IO图表</n-button>
                     <n-button :disabled="globalDisabled" @click="showEndPoint = true">端点统计</n-button>
                     <n-button :disabled="globalDisabled" @click="showConv = true">会话统计</n-button>
                     <n-button :disabled="globalDisabled" @click="showHttp = true">HTTP分析</n-button>
@@ -826,10 +831,10 @@ const rowStyle = ({ row }) => {
                 </template>
               </vxe-toolbar>
 
-              <vxe-table :border="false" id="idx" :custom-config="{ storage: true }" :pagerConfig="pagerConfig"
-                size="mini" :menu-config="menuConfig" @menu-click="showPanel" @current-change="currentChange"
-                :loading="loading" show-overflow :keep-source="false" ref="xTable" height="500"
-                :row-config="{ isHover: true, isCurrent: true, useKey: true }"
+              <vxe-table :row-style="rowStyle" :border="false" id="idx" :custom-config="{ storage: true }"
+                :pagerConfig="pagerConfig" size="mini" :menu-config="menuConfig" @menu-click="showPanel"
+                @current-change="currentChange" :loading="loading" show-overflow :keep-source="false" ref="xTable"
+                height="500" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
                 :column-config="{ useKey: true, resizable: true }"
                 :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: false }" :scroll-x="{ enabled: true, gt: 20 }">
                 <vxe-column field="idx" width="100" title="序号">
@@ -874,8 +879,8 @@ const rowStyle = ({ row }) => {
                 <div style="padding: 20px;min-width:870px;">
                   <!-- <router-link tag="a" target="_blank" to="/pcap">第一种新窗口打开页面</router-link> -->
 
-                  <n-tree key-filed="id" :selectable="true" label-field="key" :node-props="clickTree" :multiple="false"
-                    block-line :data="treeData" />
+                  <n-tree :cancelable="false" key-filed="id" :selectable="true" label-field="key" :node-props="clickTree"
+                    :multiple="false" block-line :data="treeData" />
                 </div>
                 <!-- <div v-if="treeData" style="display: flex;justify-content: center;">
                   <img :src="caseimg" alt="">
@@ -892,7 +897,7 @@ const rowStyle = ({ row }) => {
                     </div>
                   </div>
                   <div style="width: 400px;min-width: 400px;">
-                    <n-grid x-gap="1" :cols="16">
+                    <n-grid x-gap="0" :cols="16">
                       <n-grid-item v-for="(e, i) in codeData" :key="i">
                         <div :class="e.isActive ? 'active' : ''">
                           {{ e.ele }}
@@ -901,8 +906,8 @@ const rowStyle = ({ row }) => {
                     </n-grid>
                   </div>
 
-                  <div style="margin-left: 15px;">
-                    <n-grid x-gap="1" :cols="16">
+                  <div style="margin-left: 15px;width: 130px;">
+                    <n-grid x-gap="0" :cols="16">
                       <n-grid-item v-for="(code, i) in AsicCode" :key="i">
                         <div :class="code.isActive ? 'active' : ''">
                           {{ code.ele }}
@@ -970,8 +975,14 @@ const rowStyle = ({ row }) => {
     </n-drawer>
 
     <n-drawer :mask-closable="false" v-model:show="showSum" width="700" :placement="placement">
-      <n-drawer-content title="统计" closable>
+      <n-drawer-content title="统计层次结构" closable>
         <PcapSum :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapSum>
+      </n-drawer-content>
+    </n-drawer>
+
+    <n-drawer :mask-closable="false" v-model:show="showIO" width="1000" :placement="placement">
+      <n-drawer-content title="IO图表" closable>
+        <PcapIO :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapIO>
       </n-drawer-content>
     </n-drawer>
 
@@ -1049,10 +1060,14 @@ const rowStyle = ({ row }) => {
 // }
 
 .active {
-  background-color: rgb(114, 139, 220)
+  background-color: #8DEEEE;
 }
 
 :deep.vxe-table--render-default .vxe-body--row.row--current {
-  background-color: rgb(6, 158, 240) !important;
+  background-color: #4682B4 !important;
+}
+
+:deep.n-tree.n-tree--block-line .n-tree-node:not(.n-tree-node--disabled).n-tree-node--selected {
+  background-color: #8DEEEE !important;
 }
 </style>

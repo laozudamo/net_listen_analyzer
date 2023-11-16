@@ -147,7 +147,7 @@ onMounted(async () => {
 
     </n-tab-pane>
   </n-tabs>
-  <vxe-toolbar size="mini" ref="toolBar" :export="true" :custom="true">
+  <vxe-toolbar size="mini" ref="toolBar" :export="false" :custom="true">
     <template #tools>
       <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
         placeholder="试试全表搜索"></vxe-input>
@@ -157,10 +157,10 @@ onMounted(async () => {
 
   <!-- :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" -->
   <!-- :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" -->
-  <vxe-table id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source
-    ref="xTable" height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
-    :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
-    :scroll-x="{ enabled: true, gt: 20 }">
+  <vxe-table :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" id="idx"
+    :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source ref="xTable" height="800"
+    :row-config="{ isHover: true, isCurrent: true, useKey: true }" :column-config="{ useKey: true, resizable: true }"
+    :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }" :scroll-x="{ enabled: true, gt: 20 }">
     <vxe-column field="Address" title="Address" sortable></vxe-column>
     <vxe-column field="Packets" title="Packets" sortable></vxe-column>
     <vxe-column field="Bytes" title="Bytes" sortable></vxe-column>

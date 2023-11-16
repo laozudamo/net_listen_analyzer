@@ -128,7 +128,7 @@ onMounted(async () => {
     </n-tab-pane>
   </n-tabs>
 
-  <vxe-toolbar ref="toolBar" :custom="true">
+  <vxe-toolbar ref="toolBar" :export="false" :custom="true">
     <template #tools>
       <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
         placeholder="试试全表搜索"></vxe-input>
@@ -136,13 +136,14 @@ onMounted(async () => {
     </template>
   </vxe-toolbar>
 
-  <vxe-table id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow :tooltip-config="{showAll: true}" keep-source
-    ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
+  <vxe-table :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" id="idx"
+    :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow :tooltip-config="{ showAll: true }"
+    keep-source ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
     :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
     :scroll-x="{ enabled: true, gt: 20 }">
     <!-- <vxe-column field="协议(protocol)" title="协议(protocol)"></vxe-column>
     <vxe-column field="大小(bytes)" title="大小(bytes)"></vxe-column> -->
-    <vxe-column field="出现次数(Frequency)" title="出现次数(Frequency)"></vxe-column>
+    <vxe-column field="出现次数(Frequency)" title="出现次数(Frequency)" sortable></vxe-column>
     <vxe-column field="分组(Group)" title="分组(Group)"></vxe-column>
     <vxe-column field="协议(Protocol)" title="协议(Protocol)"></vxe-column>
     <vxe-column field="概要(Summary)" title="概要(Summary)"></vxe-column>

@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import { ipInfo } from '@/api/pcap.js'
-
 import localforage from 'localforage'
 
 const myIndexedDB = localforage.createInstance({
@@ -129,7 +128,7 @@ onMounted(async () => {
     </n-tab-pane>
   </n-tabs>
 
-  <vxe-toolbar ref="toolBar" :custom="true">
+  <vxe-toolbar ref="toolBar" :export="false" :custom="true">
     <template #tools>
       <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
         placeholder="试试全表搜索"></vxe-input>
@@ -137,19 +136,20 @@ onMounted(async () => {
     </template>
   </vxe-toolbar>
 
-  <vxe-table id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source
-    ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
+  <vxe-table id="idx" :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }"
+    :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source ref="xTable" border
+    height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
     :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
     :scroll-x="{ enabled: true, gt: 20 }">
-    <vxe-column field="Topic / Item" title="Topic / Item"></vxe-column>
-    <vxe-column field="Burst Rate" title="Burst Rate"></vxe-column>
-    <vxe-column field="Burst Start" title="Burst Start"></vxe-column>
-    <vxe-column field="Rate (ms)" title="Rate (ms)"></vxe-column>
-    <vxe-column field="Percent" title="Percent"></vxe-column>
-    <vxe-column field="Min Val" title="Min Val"></vxe-column>
-    <vxe-column field="Max Val" title="Max Val"></vxe-column>
-    <vxe-column field="Average" title="Average"></vxe-column>
-    <vxe-column field="Count" title="Count"></vxe-column>
+    <vxe-column field="Topic / Item" title="Topic / Item" sortable></vxe-column>
+    <vxe-column field="Burst Rate" title="Burst Rate" sortable></vxe-column>
+    <vxe-column field="Burst Start" title="Burst Start" sortable></vxe-column>
+    <vxe-column field="Rate (ms)" title="Rate (ms)" sortable></vxe-column>
+    <vxe-column field="Percent" title="Percent" sortable></vxe-column>
+    <vxe-column field="Min Val" title="Min Val" sortable></vxe-column>
+    <vxe-column field="Max Val" title="Max Val" sortable></vxe-column>
+    <vxe-column field="Average" title="Average" sortable></vxe-column>
+    <vxe-column field="Count" title="Count" sortable></vxe-column>
   </vxe-table>
 </template>
 
