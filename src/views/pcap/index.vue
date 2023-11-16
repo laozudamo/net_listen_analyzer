@@ -2,7 +2,7 @@
 import { h, computed, ref, onMounted, reactive, nextTick } from "vue";
 import { NIcon } from "naive-ui";
 import { RouterLink, useRouter } from "vue-router";
-import { getData, pacpList, getDetail, filterList, expertInfo, sessionInfo, endPointInfo, trackList } from '@/api/pcap.js'
+import { getData, pacpList, getDetail, filterList, expertInfo, sessionInfo, endPointInfo, trackList, trackData } from '@/api/pcap.js'
 import { createToaster } from "@meforma/vue-toaster";
 const toaster = createToaster({ type: 'error', position: 'top', duration: 1000 });
 
@@ -521,6 +521,18 @@ function showPanel (v) {
   console.log('showPanel', v)
 }
 
+async function trackFlowData () {
+  try {
+    let params = {
+      ...query,
+
+    }
+    let { data } = await trackData(params)
+  } catch (error) {
+
+  }
+}
+
 // let expertModel = ref(null)
 let expertInfos = ref(null)
 let expertController = ref(null)
@@ -729,6 +741,11 @@ function getCurrentColumn (val) {
   console.log("getCurrentColumn", val);
 }
 
+function clear () {
+  const $xTable = xTable.value
+  $xTable.loadData(list.value)
+}
+
 
 const rowStyle = ({ row }) => {
   return {
@@ -793,8 +810,9 @@ const rowStyle = ({ row }) => {
                     <n-button :disabled="globalDisabled" @click="showHttp = true">HTTP分析</n-button>
                   </div>
 
-                  <vxe-input :disabled="globalDisabled" style="width: 500px;margin-right: 5px;margin-left: 20px;"
-                    v-model="filterName" type="search" placeholder="试试全表搜索"></vxe-input>
+                  <vxe-input @clear="clear" :clearable="true" :disabled="globalDisabled"
+                    style="width: 500px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
+                    placeholder="试试全表搜索"></vxe-input>
                   <n-button :disabled="globalDisabled" style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
 
                   <n-button :disabled="globalDisabled" size="small" quaternary circle style="margin-left: 5px;"
@@ -1035,6 +1053,6 @@ const rowStyle = ({ row }) => {
 }
 
 :deep.vxe-table--render-default .vxe-body--row.row--current {
-    background-color: rgb(6, 158, 240)!important;
+  background-color: rgb(6, 158, 240) !important;
 }
 </style>

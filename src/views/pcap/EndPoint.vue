@@ -147,25 +147,27 @@ onMounted(async () => {
 
     </n-tab-pane>
   </n-tabs>
-  <vxe-toolbar ref="toolBar" :custom="true">
+  <vxe-toolbar size="mini" ref="toolBar" :export="true" :custom="true">
     <template #tools>
-      <vxe-input  style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName"
-        type="search" placeholder="试试全表搜索"></vxe-input>
-      <n-button  style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
+      <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
+        placeholder="试试全表搜索"></vxe-input>
+      <n-button size="small" style="margin-left: 10px;margin-right: 10px;" @click="searchEvent">搜索</n-button>
     </template>
   </vxe-toolbar>
 
+  <!-- :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" -->
+  <!-- :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" -->
   <vxe-table id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source
-    ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
+    ref="xTable" height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
     :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
     :scroll-x="{ enabled: true, gt: 20 }">
-    <vxe-column field="Address" title="Address"></vxe-column>
-    <vxe-column field="Packets" title="Packets"></vxe-column>
-    <vxe-column field="Bytes" title="Bytes"></vxe-column>
-    <vxe-column field="Tx Packets" title="Tx Packets"></vxe-column>
-    <vxe-column field="Tx Bytes" title="Tx Bytes"></vxe-column>
-    <vxe-column field="Rx Packets" title="Rx Packets"></vxe-column>
-    <vxe-column field="Rx Bytes" title="Rx Bytes"></vxe-column>
+    <vxe-column field="Address" title="Address" sortable></vxe-column>
+    <vxe-column field="Packets" title="Packets" sortable></vxe-column>
+    <vxe-column field="Bytes" title="Bytes" sortable></vxe-column>
+    <vxe-column field="Tx Packets" title="Tx Packets" sortable></vxe-column>
+    <vxe-column field="Tx Bytes" title="Tx Bytes" sortable></vxe-column>
+    <vxe-column field="Rx Packets" title="Rx Packets" sortable></vxe-column>
+    <vxe-column field="Rx Bytes" title="Rx Bytes" sortable></vxe-column>
     <vxe-column field="Country" title="Country" v-if="currentTab == 0 || currentTab == 1"></vxe-column>
     <vxe-column field="City" title="City" v-if="currentTab == 0 || currentTab == 1"></vxe-column>
     <vxe-column field="As Number" title="As Number" v-if="currentTab == 0 || currentTab == 1"></vxe-column>
