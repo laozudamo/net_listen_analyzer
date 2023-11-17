@@ -218,6 +218,15 @@ async function getTrackList () {
   try {
     let { data } = await trackList()
     options[0] = data.map((item, i) => {
+      if (item.protocol === "HTTP") {
+
+        return {
+          ...item,
+          code: item.protocol_map.toLowerCase(),
+          name: item.protocol,
+          disabled: true
+        }
+      }
       return {
         ...item,
         code: item.protocol.toLowerCase(),
@@ -519,19 +528,31 @@ async function GetfilterData () {
   }
 }
 
-function showPanel (v) {
-  console.log('showPanel', v)
+function contextMenuClickEvent ({ menu, row, column }) {
+  trackFlowData(row.idx, menu.code)
 }
 
-async function trackFlowData () {
+let showTrackPcap = ref(false)
+let trackLoading = ref(false)
+let trackDataSource = ref([])
+
+async function trackFlowData (idx, l4_protocol) {
+  trackDataSource.value = []
+  showTrackPcap.value = true
+  trackLoading.value = true
   try {
     let params = {
-      ...query,
-
+      file_name: query.file_name,
+      pcap_path: query.pcap_path,
+      idx,
+      l4_protocol
     }
     let { data } = await trackData(params)
+    trackDataSource.value = data
+    trackLoading.value = false
+    console.log('data: ' + data)
   } catch (error) {
-
+    trackLoading.value = false
   }
 }
 
@@ -638,6 +659,7 @@ let showPcapIp = ref(false)
 let showExpert = ref(false)
 
 let showIO = ref(false)
+
 
 let placement = 'right'
 
@@ -765,7 +787,7 @@ const rowStyle = ({ row }) => {
     :height="384" :x-offset="12" :y-offset="60" :rotate="-35" /> -->
   <div class="the-setting">
     <splitpanes class="default-theme" :dbl-click-splitter="false">
-      <pane size="15" max-size="20">
+      <pane min-size="5" size="15" max-size="20">
         <div class="the-menu">
           <div style="display: flex;align-items: center;margin-top: 10px;margin-left: 10px;">
             <n-input v-model:value="fileName" type="text" placeholder="搜索文件" />
@@ -832,7 +854,7 @@ const rowStyle = ({ row }) => {
               </vxe-toolbar>
 
               <vxe-table :row-style="rowStyle" :border="false" id="idx" :custom-config="{ storage: true }"
-                :pagerConfig="pagerConfig" size="mini" :menu-config="menuConfig" @menu-click="showPanel"
+                :pagerConfig="pagerConfig" size="mini" :menu-config="menuConfig" @menu-click="contextMenuClickEvent"
                 @current-change="currentChange" :loading="loading" show-overflow :keep-source="false" ref="xTable"
                 height="500" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
                 :column-config="{ useKey: true, resizable: true }"
@@ -906,7 +928,7 @@ const rowStyle = ({ row }) => {
                     </n-grid>
                   </div>
 
-                  <div style="margin-left: 15px;width: 130px;">
+                  <div style="margin-left: 15px;width: 170px;min-width: 170px;">
                     <n-grid x-gap="0" :cols="16">
                       <n-grid-item v-for="(code, i) in AsicCode" :key="i">
                         <div :class="code.isActive ? 'active' : ''">
@@ -980,7 +1002,7 @@ const rowStyle = ({ row }) => {
       </n-drawer-content>
     </n-drawer>
 
-    <n-drawer :mask-closable="false" v-model:show="showIO" width="1000" :placement="placement">
+    <n-drawer :mask-closable="false" v-model:show="showIO" width="1200" :placement="placement">
       <n-drawer-content title="IO图表" closable>
         <PcapIO :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapIO>
       </n-drawer-content>
@@ -989,6 +1011,21 @@ const rowStyle = ({ row }) => {
     <n-drawer :mask-closable="false" v-model:show="showPcapIp" width="1200" :placement="placement">
       <n-drawer-content title="IP信息" closable>
         <PcapIp :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapIp>
+      </n-drawer-content>
+    </n-drawer>
+
+
+    <n-drawer :mask-closable="false" v-model:show="showTrackPcap" width="1200" :placement="placement">
+      <n-drawer-content title="追踪流" closable>
+        <n-spin style="width: 100%;height: 100%;" :show="trackLoading" :delay="1000">
+          <template #description>
+            加载中...
+          </template>
+          <div style="white-space: pre-wrap;padding: 20px;cursor: pointer;" v-for="(ele, i) in trackDataSource" :key="i">
+            {{ ele }}
+          </div>
+
+        </n-spin>
       </n-drawer-content>
     </n-drawer>
 

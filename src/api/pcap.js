@@ -136,10 +136,19 @@ export function trackList () {
   })
 }
 
-export function trackData (params) {
+export function trackData (data) {
   return request({
     url: 'pcap/trace/flow',
-    method: 'get',
-    params
+    method: 'post',
+    data
   })
 }
+
+// 设备信息
+export function deviceInfo () {
+  return request({
+    url: 'devices/info',
+    method: 'get',
+  })
+}
+

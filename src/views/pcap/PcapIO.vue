@@ -42,8 +42,28 @@ async function getStatInfo (item) {
 const myCharts = ref(null)
 
 function handleOptions () {
+  let name = props.query.file_name
 
   let option = {
+
+    toolbox: {
+      show: true,
+      feature: {
+        // dataZoom: {
+        //   yAxisIndex: "none"
+        // },
+        dataView: {
+          readOnly: false
+        },
+        magicType: {
+          type: ["line", "bar"]
+        },
+        restore: {},
+        saveAsImage: {
+          name: name
+        }
+      }
+    },
     xAxis: {
       type: 'category',
       data: theData.value.x_list,
@@ -52,11 +72,11 @@ function handleOptions () {
       show: true,
     },
     dataZoom: [
-      // {
-      //   start: 0,
-      //   end: 5,
-      //   type: "inside"
-      // },
+      {
+        start: 0,
+        end: 5,
+        type: "inside"
+      },
       {
         start: 0,
         end: 5,
@@ -155,7 +175,8 @@ onMounted(async () => {
     <template #description>
       加载中...
     </template>
-    <div id="charts" style="width: 900px;height: 600px;margin-top: 0px;"></div>
+    <h3>{{ query.file_name }}</h3>
+    <div id="charts" style="width: 1100px;height: 600px;margin-top: 0px;"></div>
   </n-spin>
 </template>
 

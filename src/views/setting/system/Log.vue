@@ -6,8 +6,9 @@ import { logInfo } from '@/api/pcap.js'
 
 // const { changePage, changePageSize, pagination, resData } = usePagination('/users/action/list')
 
+let loading = ref(false)
 const operateColums = [
- 
+
   {
     title: "时间",
     key: "time"
@@ -39,8 +40,10 @@ async function getData () {
     console.log(error)
   }
 }
-onMounted(() => {
-  getData()
+onMounted(async () => {
+  loading.value = true
+  await getData()
+  loading.value = false
 })
 
 
@@ -50,7 +53,9 @@ onMounted(() => {
 <template>
   <div>
     <Title title="日志" />
-    <n-data-table style="padding: 20px;" :columns="operateColums" :data="resData" :bordered="false" />
+    <n-spin style="width: 100%;height: 100%;" :show="loading" :delay="1000">
+      <n-data-table style="padding: 20px;" :columns="operateColums" :data="resData" :bordered="false" />
+    </n-spin>
     <!-- <div class="the-pag">
             <n-pagination v-model:page="pagination.page" :page-count="pagination.page_num" show-size-picker
                 :page-size="pagination.page_size" :page-sizes="[5, 10, 20, 50]" @update:page="changePage"
