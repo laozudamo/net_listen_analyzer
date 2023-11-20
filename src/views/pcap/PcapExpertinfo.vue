@@ -17,6 +17,8 @@ const props = defineProps({
 
 const xTable = ref(null)
 const toolBar = ref(null)
+let filterName = ref("")
+let current = ref(0)
 
 const tabList = ref([
   {
@@ -57,7 +59,8 @@ async function getInfo () {
   loading.value = true
   try {
     let params = {
-      ...props.query
+      ...props.query,
+      display_filter: filterName.value
     }
     let { data } = await expertInfo(params)
     // console.log(data)
@@ -76,8 +79,11 @@ function handleData (data) {
   tabList.value.forEach(item => {
     let index = data.findIndex(ele => ele.key.includes(item.value))
     let found = data.find(ele => ele.key.includes(item.value))
-    tabList.value[index].content = found.values
-    tabList.value[index].title = found.key
+    if (index >= 0) {
+      tabList.value[index].content = found.values
+      tabList.value[index].title = found.key
+    }
+
   })
 }
 
@@ -100,9 +106,9 @@ async function getAllData () {
 }
 
 
-
 function changeTab (i) {
   let data = tabList.value[i].content
+  current.value = i
 
   const $table = xTable.value
   $table.loadData(data)
@@ -119,22 +125,40 @@ nextTick(() => {
 onMounted(async () => {
   await getAllData()
 })
+
+async function searchEvent () {
+  if (filterName.value) {
+    await getInfo()
+    // console.log(tabList.value)
+    let data = tabList.value[current.value].content
+    const $table = xTable.value
+    $table.loadData(data)
+  } else {
+    const value = await myIndexedDB.getItem('expertInfo');
+    if (value) {
+      tabList.value = JSON.parse(value)
+      let data = tabList.value[current.value].content
+      await xTable.value.loadData(data)
+      console.log("加载原数据")
+    }
+  }
+}
 </script>
 
 <template>
+  <vxe-toolbar ref="toolBar" :export="false" :custom="true">
+    <template #tools>
+      <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
+        placeholder="显示过滤···"></vxe-input>
+      <n-button style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
+    </template>
+  </vxe-toolbar>
+
   <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
     <n-tab-pane v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
       {{ tabList[i].title }}
     </n-tab-pane>
   </n-tabs>
-
-  <vxe-toolbar ref="toolBar" :export="false" :custom="true">
-    <template #tools>
-      <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
-        placeholder="试试全表搜索"></vxe-input>
-      <n-button style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
-    </template>
-  </vxe-toolbar>
 
   <vxe-table :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" id="idx"
     :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow :tooltip-config="{ showAll: true }"

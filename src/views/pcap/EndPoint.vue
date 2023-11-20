@@ -16,6 +16,8 @@ const props = defineProps({
 
 const xTable = ref(null)
 const toolBar = ref(null)
+let filterName = ref("")
+let current = ref(0)
 
 const tabList = ref([
   {
@@ -56,7 +58,8 @@ async function getInfo (item, i) {
   try {
     let params = {
       protocol: item.value,
-      ...props.query
+      ...props.query,
+      display_filter: filterName.value
     }
     let { data } = await endPointInfo(params)
     item.content = data
@@ -107,7 +110,7 @@ let currentTab = ref(0)
 
 function changeTab (i) {
   let data = tabList.value[i].content
-
+  current.value = i
   currentTab.value = i
 
   const $table = xTable.value
@@ -127,9 +130,35 @@ onMounted(async () => {
 })
 
 
+async function searchEvent () {
+  if (filterName.value) {
+    await handleData()
+    console.log(tabList.value)
+    let data = tabList.value[current.value].content
+    const $table = xTable.value
+    $table.loadData(data)
+  } else {
+    const value = await myIndexedDB.getItem('tabList');
+    if (value) {
+      tabList.value = JSON.parse(value)
+      let data = tabList.value[current.value].content
+      await xTable.value.loadData(data)
+      console.log("加载原数据")
+    }
+  }
+}
+
+
 </script>
 
 <template>
+  <vxe-toolbar size="mini" ref="toolBar" :export="false" :custom="true">
+    <template #tools>
+      <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
+        placeholder="显示过滤···"></vxe-input>
+      <n-button size="small" style="margin-left: 10px;margin-right: 10px;" @click="searchEvent">搜索</n-button>
+    </template>
+  </vxe-toolbar>
   <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
     <n-tab-pane display-directive="show" v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
       <!-- <n-spin :show="loading">
@@ -147,13 +176,7 @@ onMounted(async () => {
 
     </n-tab-pane>
   </n-tabs>
-  <vxe-toolbar size="mini" ref="toolBar" :export="false" :custom="true">
-    <template #tools>
-      <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
-        placeholder="试试全表搜索"></vxe-input>
-      <n-button size="small" style="margin-left: 10px;margin-right: 10px;" @click="searchEvent">搜索</n-button>
-    </template>
-  </vxe-toolbar>
+
 
   <!-- :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" -->
   <!-- :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" -->

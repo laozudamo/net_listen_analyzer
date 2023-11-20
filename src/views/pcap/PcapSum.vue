@@ -14,29 +14,15 @@ const props = defineProps({
   }
 })
 
+const loading = ref(false)
 const xTable = ref(null)
 const toolBar = ref(null)
+let filterName = ref("")
 
 let listData = ref(null)
 
-async function getStatInfo (item) {
-  try {
-    let params = {
-      interval: 0,
-      io_type: "stat",
-      ...props.query
-    }
-    let { data } = await IoStatInfo(params)
-    // item.content = data
-    listData.value = data
-
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-
 async function getPhsInfo (item) {
+  loading.value = true
   try {
     let params = {
       io_type: "phs",
@@ -45,8 +31,9 @@ async function getPhsInfo (item) {
     let { data } = await IoPhsInfo(params)
 
     listData.value = data
-
+    loading.value = false
   } catch (error) {
+    loading.value = false
     console.log(error)
   }
 }
@@ -60,17 +47,26 @@ nextTick(() => {
 })
 
 onMounted(async () => {
-
   const value = await myIndexedDB.getItem('pcapSum');
-
   if (value) {
     listData.value = JSON.parse(value)
-    myIndexedDB.setItem("pcapSum", JSON.stringify(tabList.value))
     return
   }
-
-  getPhsInfo()
+  await getPhsInfo()
+  myIndexedDB.setItem("pcapSum", JSON.stringify(listData.value))
 })
+
+
+async function searchEvent () {
+  if (filterName.value) {
+    await getPhsInfo()
+  } else {
+    const value = await myIndexedDB.getItem('pcapConv');
+    if (value) {
+      listData.value = JSON.parse(value)
+    }
+  }
+}
 
 </script>
 
@@ -78,7 +74,7 @@ onMounted(async () => {
   <vxe-toolbar ref="toolBar" :export="false" :custom="true">
     <template #tools>
       <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
-        placeholder="试试全表搜索"></vxe-input>
+        placeholder="显示过滤···"></vxe-input>
       <n-button style="margin-left: 10px;margin-right: 10px;" @click="searchEvent">搜索</n-button>
     </template>
   </vxe-toolbar>

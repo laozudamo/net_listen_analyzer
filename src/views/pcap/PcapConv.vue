@@ -14,6 +14,9 @@ const props = defineProps({
 })
 const xTable = ref(null)
 const toolBar = ref(null)
+let filterName = ref("")
+let current = ref(0)
+
 const tabList = ref([
   {
     label: "IPV4会话",
@@ -51,7 +54,8 @@ async function getInfo (item, i) {
   try {
     let params = {
       protocol: item.value,
-      ...props.query
+      ...props.query,
+      display_filter: filterName.value
     }
     let { data } = await sessionInfo(params)
     item.content = data
@@ -96,7 +100,7 @@ async function handleData () {
 
 async function changeTab (i) {
   let data = tabList.value[i].content
-
+  current.value = i
   const $table = xTable.value
   $table.loadData(data)
 }
@@ -113,6 +117,24 @@ onMounted(async () => {
   await getAllData()
 })
 
+async function searchEvent () {
+  if (filterName.value) {
+    await handleData()
+    console.log(tabList.value)
+    let data = tabList.value[current.value].content
+    const $table = xTable.value
+    $table.loadData(data)
+  } else {
+    const value = await myIndexedDB.getItem('pcapConv');
+    if (value) {
+      tabList.value = JSON.parse(value)
+      let data = tabList.value[current.value].content
+      await xTable.value.loadData(data)
+    }
+  }
+}
+
+
 </script>
 <template>
   <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
@@ -121,14 +143,15 @@ onMounted(async () => {
   </n-tabs>
   <vxe-toolbar ref="toolBar" :export="false" :custom="true">
     <template #tools>
-      <vxe-input  style="width: 500px;margin-right: 5px;margin-left: 20px;" v-model="filterName"
-        type="search" placeholder="试试全表搜索"></vxe-input>
-      <n-button  style="margin-left: 10px;margin-right: 10px;" @click="searchEvent">搜索</n-button>
+      <vxe-input style="width: 500px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
+        placeholder="显示过滤···"></vxe-input>
+      <n-button style="margin-left: 10px;margin-right: 10px;" @click="searchEvent">搜索</n-button>
     </template>
   </vxe-toolbar>
 
-  <vxe-table :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source
-    ref="xTable" border height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
+  <vxe-table :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" id="idx"
+    :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source ref="xTable" border
+    height="800" :row-config="{ isHover: true, isCurrent: true, useKey: true }"
     :column-config="{ useKey: true, resizable: true }" :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }"
     :scroll-x="{ enabled: true, gt: 20 }">
     <vxe-column field="Address A" width="100" title="Address A" sortable></vxe-column>

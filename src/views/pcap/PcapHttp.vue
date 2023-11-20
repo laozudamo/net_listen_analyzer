@@ -63,7 +63,8 @@ async function getInfo (item) {
     let params = {
       protocol: item.value,
       statistical_type: item.type,
-      ...props.query
+      ...props.query,
+      display_filter: filterName.value,
     }
     let { data } = await httpInfo(params)
     item.content = data
@@ -98,16 +99,18 @@ async function handleData () {
   loading.value = true
   const promises = []
   tabList.value.forEach((item, i) => {
-    let j = getInfo(item, item.key)
+    let j = getInfo(item)
     promises.push(j)
   })
   await Promise.allSettled(promises)
   loading.value = false
 }
 
-function changeTab (i) {
-  let data = tabList.value[i].content
+let current = ref(0)
 
+function changeTab (i) {
+  current.value = i
+  let data = tabList.value[i].content
   const $table = xTable.value
   $table.loadData(data)
 }
@@ -125,37 +128,42 @@ onMounted(() => {
   getAllData()
 })
 
+let filterName = ref("")
+
+async function searchEvent () {
+  if (filterName.value) {
+    await handleData()
+    console.log(tabList.value)
+    let data = tabList.value[current.value].content
+    const $table = xTable.value
+    $table.loadData(data)
+  } else {
+    const value = await myIndexedDB.getItem('pcapHttp');
+    if (value) {
+      tabList.value = JSON.parse(value)
+      let data = tabList.value[current.value].content
+      await xTable.value.loadData(data)
+    }
+  }
+}
+
+
 
 </script>
 
 <template>
-  <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
-    <n-tab-pane v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
-
-      <!-- <n-spin :show="loading">
-        <template #description>
-          加载中···
-        </template>
-        <div v-if="!content || content.length === 0"
-          style="height: 100vh;white-space: pre-wrap;padding: 20px;margin-left: 20px;">
-          暂无数据
-        </div>
-        <div v-else style="height: 100vh;white-space: pre-wrap;padding: 20px;margin-left: 20px;">
-          {{ content }}
-        </div>
-      </n-spin> -->
-
-    </n-tab-pane>
-  </n-tabs>
-
-
   <vxe-toolbar ref="toolBar" :custom="true">
     <template #tools>
       <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
-        placeholder="试试全表搜索"></vxe-input>
+        placeholder="显示过滤···"></vxe-input>
       <n-button style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
     </template>
   </vxe-toolbar>
+
+  <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
+    <n-tab-pane v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
+    </n-tab-pane>
+  </n-tabs>
 
   <vxe-table id="idx" :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow
     :tooltip-config="{ showAll: true }" keep-source ref="xTable" border height="800"
@@ -174,7 +182,7 @@ onMounted(() => {
     <vxe-column field="Percent" title="Percent"></vxe-column>
     <vxe-column field="Burst Rate" title="Burst Rate"></vxe-column>
     <vxe-column field="Burst Start" title="Burst Start"></vxe-column>
-    
+
   </vxe-table>
 </template>
 

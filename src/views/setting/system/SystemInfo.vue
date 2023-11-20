@@ -212,7 +212,7 @@ const columns = [
     title: '使用率',
     key: 'percent',
     render (row) {
-      return <div>{row.free} %</div>
+      return <div>{row.percent} %</div>
     }
   },
 ]
