@@ -1,5 +1,5 @@
 <script setup lang="jsx">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref } from 'vue'
 import { deviceInfo } from '@/api/pcap.js'
 import DiskCharts from './DiskCharts.vue'
 
@@ -28,15 +28,33 @@ async function getData () {
   }
 }
 
-
 onMounted(async () => {
   loading.value = true
   await getData()
   await handleMemoryChats()
   await handleCpuCharts()
   loading.value = false
+  await getLoop()
 })
 
+let timer = ref(null)
+
+async function getLoop () {
+  if (timer.value) {
+    clearTimeout(timer.value)
+  }
+  await getData()
+  await handleMemoryChats()
+  await handleCpuCharts()
+
+  timer.value = setTimeout(() => {
+    getLoop()
+  }, 5000)
+}
+
+onUnmounted(() => {
+  clearTimeout(timer.value)
+})
 
 const memoryCharts = ref(null)
 

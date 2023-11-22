@@ -26,15 +26,15 @@ function renderIcon (icon) {
 
 const menuOptions = [
   {
-    key: "/setting/log",
-    icon: renderIcon(Catalog),
-    label: "日志"
-  },
-  {
 
     key: "/setting/systeminfo",
     icon: renderIcon(TvOutline),
     label: "系统信息"
+  },
+  {
+    key: "/setting/log",
+    icon: renderIcon(Catalog),
+    label: "日志"
   },
   // {
 
