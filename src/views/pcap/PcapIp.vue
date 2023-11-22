@@ -146,11 +146,11 @@ async function searchEvent () {
 </script>
 
 <template>
-  <vxe-toolbar ref="toolBar" :export="false" :custom="true">
+  <vxe-toolbar ref="toolBar" :export="true" :custom="true">
     <template #tools>
       <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
         placeholder="显示过滤···"></vxe-input>
-      <n-button style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
+      <n-button style="margin-left: 10px;margin-right: 10px;" @click="searchEvent">搜索</n-button>
     </template>
   </vxe-toolbar>
 

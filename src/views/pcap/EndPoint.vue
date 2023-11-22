@@ -152,7 +152,7 @@ async function searchEvent () {
 </script>
 
 <template>
-  <vxe-toolbar size="mini" ref="toolBar" :export="false" :custom="true">
+  <vxe-toolbar size="mini" ref="toolBar" :export="true" :custom="true">
     <template #tools>
       <vxe-input style="width: 300px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
         placeholder="显示过滤···"></vxe-input>
@@ -180,7 +180,7 @@ async function searchEvent () {
 
   <!-- :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" -->
   <!-- :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" -->
-  <vxe-table :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" id="idx"
+  <vxe-table :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" id="idx" border
     :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source ref="xTable" height="800"
     :row-config="{ isHover: true, isCurrent: true, useKey: true }" :column-config="{ useKey: true, resizable: true }"
     :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true }" :scroll-x="{ enabled: true, gt: 20 }">

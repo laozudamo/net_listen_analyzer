@@ -134,20 +134,19 @@ async function searchEvent () {
   }
 }
 
-
 </script>
 <template>
-  <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
-    <n-tab-pane display-directive="show" v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
-    </n-tab-pane>
-  </n-tabs>
-  <vxe-toolbar ref="toolBar" :export="false" :custom="true">
+    <vxe-toolbar ref="toolBar" :export="true" :custom="true">
     <template #tools>
       <vxe-input style="width: 500px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
         placeholder="显示过滤···"></vxe-input>
       <n-button style="margin-left: 10px;margin-right: 10px;" @click="searchEvent">搜索</n-button>
     </template>
   </vxe-toolbar>
+  <n-tabs @update:value="changeTab" size="small" type="line" default-value="0">
+    <n-tab-pane display-directive="show" v-for="(tab, i) in tabList" :name="tab.key" :tab="tab.label">
+    </n-tab-pane>
+  </n-tabs>
 
   <vxe-table :export-config="{ filename: '端点统计_' + query.file_name, mode: all, original: true, }" id="idx"
     :custom-config="{ storage: true }" size="mini" :loading="loading" show-overflow keep-source ref="xTable" border
