@@ -1,7 +1,10 @@
 <script setup lang="jsx">
 import { onMounted, onUnmounted, reactive, ref } from 'vue'
-import { deviceInfo } from '@/api/pcap.js'
-import DiskCharts from './DiskCharts.vue'
+import { deviceInfo, systemResource, clearResource } from '@/api/pcap.js'
+import { createToaster } from "@meforma/vue-toaster";
+
+const toaster = createToaster({ type: 'success', position: 'top', duration: 1000 });
+// import DiskCharts from './DiskCharts.vue'
 
 import * as echarts from 'echarts';
 
@@ -47,6 +50,7 @@ async function getLoop () {
   await handleMemoryChats()
   await handleCpuCharts()
 
+  await getSotrage()
   timer.value = setTimeout(() => {
     getLoop()
   }, 5000)
@@ -56,16 +60,26 @@ onUnmounted(() => {
   clearTimeout(timer.value)
 })
 
+async function getSotrage () {
+  try {
+    let { data } = await systemResource()
+    await handleResouceCharts(data)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 const memoryCharts = ref(null)
 
 function handleMemoryChats () {
 
   let use = data.internal_storage?.percent
   let empty = 100 - use
+
   let option = {
     // backgroundColor: '#2c343c',
     title: {
-      text: '内存',
+      text: '系统内存',
       left: 'center',
       top: 20,
       textStyle: {
@@ -132,7 +146,6 @@ const cpuCharts = ref(null)
 function handleCpuCharts () {
   let use = data.devices_cpu?.cpu_percent
   let empty = 100 - use
-
   let option = {
     // backgroundColor: '#2c343c',
     title: {
@@ -261,6 +274,63 @@ const columnsIO = [
   },
 ]
 
+const resourceCharts = ref(null)
+
+function handleResouceCharts (data) {
+  let use = data?.storage_g
+
+  let option = {
+    title: {
+      text: '占用资源',
+      left: 'center',
+      top: 20,
+      textStyle: {
+        color: '#000000'
+      }
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    legend: {
+      show: false,
+      // bottom: "0%"
+    },
+    series: [
+      {
+        type: 'pie',
+        // radius: '30%',
+        center: ['50%', '50%'],
+        data: [
+          { value: use, name: '占用资源' }
+        ].sort(function (a, b) {
+          return a.value - b.value;
+        }),
+        roseType: 'radius',
+        animationType: 'scale',
+        animationEasing: 'elasticOut',
+        animationDelay: function (idx) {
+          return Math.random() * 200;
+        }
+      }
+    ]
+  };
+
+  resourceCharts.value = echarts.init(document.getElementById('resource'));
+  resourceCharts.value.setOption(option)
+}
+
+async function clearSource () {
+  try {
+    let { data, code } = await clearResource()
+    if (code == 0) {
+      toaster.show("清除成功")
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+
 // const columnsIOObj = {
 //   read_count: "读IO数",
 //   write_count: "写IO数",
@@ -300,11 +370,16 @@ const columnsIO = [
         </n-descriptions>
       </n-card>
 
-      <div style="display: flex;justify-content: space-between;">
+      <div style="display: flex;justify-content: space-between;position: relative;">
         <div id="memory" class="memory-wrap">
         </div>
         <div id="cpu" class="memory-wrap">
         </div>
+        <div id="resource" class="memory-wrap">
+        </div>
+
+        <n-button @click="clearSource" style="position: absolute; bottom: 0px;right: 50px;">清除占用</n-button>
+
       </div>
 
       <h3>磁盘信息</h3>

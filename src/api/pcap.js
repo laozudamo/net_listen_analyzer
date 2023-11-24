@@ -152,3 +152,19 @@ export function deviceInfo () {
   })
 }
 
+// 清除系统资源
+export function clearResource () {
+  return request({
+    url: 'devices/clear/resources',
+    method: 'get',
+  })
+}
+
+// 系统资源
+export function systemResource () {
+  return request({
+    url: 'devices/resources/info',
+    method: 'get',
+  })
+}
+

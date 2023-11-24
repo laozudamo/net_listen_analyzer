@@ -941,7 +941,7 @@ const rowStyle = ({ row }) => {
                 <div v-if="codeData === null" style="display: flex;justify-content: center;">
                   <img :src="caseimg" alt="">
                   <div style="font-size: 20px;color: #999; display: flex;justify-content: center;align-items: center;">
-                    暂无数据
+                    <!-- 暂无数据 -->
                   </div>
                 </div>
               </pane>
@@ -1021,9 +1021,16 @@ const rowStyle = ({ row }) => {
           <template #description>
             加载中...
           </template>
-          <div style="white-space: pre-wrap;padding: 20px;cursor: pointer;" v-for="(ele, i) in trackDataSource" :key="i">
-            {{ ele }}
+          <div v-if="trackDataSource">
+            <div style="white-space: pre-wrap;padding: 20px;cursor: pointer;" v-for="(ele, i) in trackDataSource"
+              :key="i">
+              {{ ele }}
+            </div>
           </div>
+          <div v-if="trackDataSource.length == 0">
+            无相关数据
+          </div>
+
 
         </n-spin>
       </n-drawer-content>

@@ -82,10 +82,10 @@ onBeforeUnmount(() => {
     <n-grid :x-gap="12" :cols="4">
       <n-grid-item :offset="3">
         <n-form class="the-form" :rules="rules" label-position="left" label-width="80px" ref="ruleFormRef" :model="form"
-          :show-require-mark="false" style="width: 350px; height: 320px;">
+          :show-require-mark="false" style="width: 350px; height: 350px;">
           <h3 class="login-title">
             <div></div>
-            <div>
+            <div class="text-gradient">
               网络存储分析仪
             </div>
           </h3>
@@ -106,6 +106,14 @@ onBeforeUnmount(() => {
 </template>
 
 <style lang="scss" scoped>
+.text-gradient {
+  background-image: linear-gradient(to left, rgb(0, 28, 128), rgba(0, 157, 255, 0.73));
+  -webkit-background-clip: text;
+  color: transparent;
+  font-size: 28px;
+}
+
+
 .main {
   background: #143259 url(../../assets/img/bg1.png) no-repeat center center;
   display: flex;
