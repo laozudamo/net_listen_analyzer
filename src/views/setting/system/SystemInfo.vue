@@ -60,10 +60,12 @@ onUnmounted(() => {
   clearTimeout(timer.value)
 })
 
+let resourceData = ref(null)
 async function getSotrage () {
   try {
     let { data } = await systemResource()
-    await handleResouceCharts(data)
+    resourceData.value = data
+    // await handleResouceCharts(data)
   } catch (error) {
     console.log(error)
   }
@@ -276,48 +278,48 @@ const columnsIO = [
 
 const resourceCharts = ref(null)
 
-function handleResouceCharts (data) {
-  let use = data?.storage_g
+// function handleResouceCharts (data) {
+//   let use = data?.storage_g
 
-  let option = {
-    title: {
-      text: '占用资源',
-      left: 'center',
-      top: 20,
-      textStyle: {
-        color: '#000000'
-      }
-    },
-    tooltip: {
-      trigger: 'item'
-    },
-    legend: {
-      show: false,
-      // bottom: "0%"
-    },
-    series: [
-      {
-        type: 'pie',
-        // radius: '30%',
-        center: ['50%', '50%'],
-        data: [
-          { value: use, name: '占用资源' }
-        ].sort(function (a, b) {
-          return a.value - b.value;
-        }),
-        roseType: 'radius',
-        animationType: 'scale',
-        animationEasing: 'elasticOut',
-        animationDelay: function (idx) {
-          return Math.random() * 200;
-        }
-      }
-    ]
-  };
+//   let option = {
+//     title: {
+//       text: '占用资源',
+//       left: 'center',
+//       top: 20,
+//       textStyle: {
+//         color: '#000000'
+//       }
+//     },
+//     tooltip: {
+//       trigger: 'item'
+//     },
+//     legend: {
+//       show: false,
+//       // bottom: "0%"
+//     },
+//     series: [
+//       {
+//         type: 'pie',
+//         // radius: '30%',
+//         center: ['50%', '50%'],
+//         data: [
+//           { value: use, name: '占用资源' }
+//         ].sort(function (a, b) {
+//           return a.value - b.value;
+//         }),
+//         roseType: 'radius',
+//         animationType: 'scale',
+//         animationEasing: 'elasticOut',
+//         animationDelay: function (idx) {
+//           return Math.random() * 200;
+//         }
+//       }
+//     ]
+//   };
 
-  resourceCharts.value = echarts.init(document.getElementById('resource'));
-  resourceCharts.value.setOption(option)
-}
+//   resourceCharts.value = echarts.init(document.getElementById('resource'));
+//   resourceCharts.value.setOption(option)
+// }
 
 async function clearSource () {
   try {
@@ -345,6 +347,7 @@ async function clearSource () {
 </script>
 <template>
   <Title title="系统信息" />
+
   <n-spin style="width: 100%;height: 100%;" :show="loading" :delay="1000">
     <div style="padding: 0px 20px;">
       <n-card style="margin-top: 20px;" title="网络存储测试仪 - V1.0版本">
@@ -369,17 +372,15 @@ async function clearSource () {
         </n-descriptions-item> -->
         </n-descriptions>
       </n-card>
+      <!-- <n-card style="margin-top: 20px;" title="资源占用">
+        <n-button @click="clearSource">清除占用</n-button>
+      </n-card> -->
 
       <div style="display: flex;justify-content: space-between;position: relative;">
         <div id="memory" class="memory-wrap">
         </div>
         <div id="cpu" class="memory-wrap">
         </div>
-        <div id="resource" class="memory-wrap">
-        </div>
-
-        <n-button @click="clearSource" style="position: absolute; bottom: 0px;right: 50px;">清除占用</n-button>
-
       </div>
 
       <h3>磁盘信息</h3>
@@ -390,6 +391,18 @@ async function clearSource () {
       <h3>磁盘IO</h3>
       <div class="disk-info">
         <n-data-table :columns="columnsIO" :data="data.disk_io" :pagination="pagination" :bordered="false" />
+      </div>
+
+      <div style="display: flex;align-items: center;">
+        <h3>资源占用</h3>
+        <div style="margin-left: 20px;">
+          <span> 占用: {{ resourceData?.storage_b }} kb</span>
+          <span> 占用: {{ resourceData?.storage_m }} m</span>
+          <span> 占用: {{ resourceData?.storage_g }} g</span>
+        </div>
+        <div style="margin-left: 20px;">
+          <n-button size="small" type="error" @click="clearSource">清除占用</n-button>
+        </div>
       </div>
     </div>
   </n-spin>
