@@ -10,7 +10,7 @@ import { Splitpanes, Pane } from 'splitpanes'
 import { useElementSize } from '@vueuse/core'
 import caseimg from '@/assets/img/case.png'
 import 'splitpanes/dist/splitpanes.css'
-import { ArrowDownload16Filled as Down, ArrowExportUp24Filled as Up, ArrowLeft24Filled as Left, ArrowRight24Filled as Right } from "@vicons/fluent";
+import { Replay20Regular, ArrowDownload16Filled as Down, ArrowExportUp24Filled as Up, ArrowLeft24Filled as Left, ArrowRight24Filled as Right } from "@vicons/fluent";
 
 
 import localforage from 'localforage'
@@ -142,7 +142,8 @@ async function GetpacpList () {
         label: item.key,
         key: item.key,
         prefix: renderIcon(Folder),
-        children: []
+        children: [],
+        ... (item.values.length > 0 && {disabled: true})
       }
 
       if (item.values.length > 0) {
@@ -785,6 +786,24 @@ const rowStyle = ({ row }) => {
   }
 }
 
+function renderSuffix ({ option }) {
+  return h(
+    option.children ?
+      <div></div>
+      :
+      <n-icon size="15" onClick={() => playBack(option)}>
+        <Replay20Regular />
+      </n-icon>
+
+  );
+}
+
+function playBack (val) {
+  console.log("playBack", val)
+}
+
+
+
 </script>
 
 <template>
@@ -801,8 +820,9 @@ const rowStyle = ({ row }) => {
             </BtnIcon>
           </div>
 
-          <n-tree :cancelable="false" :node-props="nodeProps" :on-update:expanded-keys="updatePrefixWithExpaned"
-            :multiple="false" block-line :data="listData" />
+          <n-tree :selectable="true" :cancelable="false" :node-props="nodeProps" :on-update:expanded-keys="updatePrefixWithExpaned"
+            :multiple="false" block-line :data="listData">
+          </n-tree>
         </div>
       </pane>
 
@@ -830,6 +850,8 @@ const rowStyle = ({ row }) => {
                     <n-button>ICMP分析</n-button>
                    
                     <n-button>统计源和目标占比</n-button> -->
+
+                    <n-button :disabled="globalDisabled" @click="showExpert = true">回放</n-button>
 
                     <n-button :disabled="globalDisabled" @click="showExpert = true">专家统计</n-button>
                     <!-- <n-button @click="showTraffic = true">流量图</n-button> -->
@@ -1117,4 +1139,9 @@ const rowStyle = ({ row }) => {
 :deep.n-tree.n-tree--block-line .n-tree-node:not(.n-tree-node--disabled).n-tree-node--selected {
   background-color: #8DEEEE !important;
 }
+
+:deep(.n-tree .n-tree-node.n-tree-node--disabled .n-tree-node-content ) {
+  color: #000000;
+}
+
 </style>
