@@ -253,6 +253,7 @@ const menuConfig = reactive({
     options[0].forEach(item => {
       item.disabled = true
     })
+    console.log('vvv', v)
 
     if (v.row.idx !== currentRow.value) {
       currentRow.value = v.row.idx
@@ -262,9 +263,13 @@ const menuConfig = reactive({
     options[0].forEach(item => {
       item.disabled = true
       let hasEle = protocols.value.find(protocol => protocol == item.code)
-      if (hasEle) {
+      if (item.protocol !== 'HTTP' && hasEle) {
         item.disabled = false;
       }
+      if (v.row.protocol === 'HTTP' && hasEle) {
+        item.disabled = false;
+      }
+
     })
     // return false
   }
@@ -805,7 +810,6 @@ const rowStyle = ({ row }) => {
         <splitpanes horizontal class="default-theme" :dbl-click-splitter="false">
           <pane style="background-color:#FFF">
             <div style="height: 100%;background: #FFF;padding: 10px;" ref="midEl">
-
               <vxe-toolbar ref="toolBar" :custom="true">
                 <template #buttons>
                   <BtnIcon :disabled="globalDisabled" color="#396CFC" msg="开始" v-if="true">
@@ -818,9 +822,9 @@ const rowStyle = ({ row }) => {
                 </template>
 
                 <template #tools>
-                  <div style="width: 600px; display: flex;justify-content: space-evenly;">
+                  <div style="width: 700px; display: flex;justify-content: space-evenly;overflow: auto;">
 
-                    <!-- <n-button>DNS层次结构</n-button>
+                    <!-- <n-button>DNS协议层次结构</n-button>
                     
             
                     <n-button>ICMP分析</n-button>
@@ -830,7 +834,7 @@ const rowStyle = ({ row }) => {
                     <n-button :disabled="globalDisabled" @click="showExpert = true">专家统计</n-button>
                     <!-- <n-button @click="showTraffic = true">流量图</n-button> -->
                     <n-button :disabled="globalDisabled" @click="showPcapIp = true">IP信息</n-button>
-                    <n-button :disabled="globalDisabled" @click="showSum = true">层次结构</n-button>
+                    <n-button :disabled="globalDisabled" @click="showSum = true">协议层次结构</n-button>
                     <n-button :disabled="globalDisabled" @click="showIO = true">IO图表</n-button>
                     <n-button :disabled="globalDisabled" @click="showEndPoint = true">端点统计</n-button>
                     <n-button :disabled="globalDisabled" @click="showConv = true">会话统计</n-button>
@@ -838,8 +842,8 @@ const rowStyle = ({ row }) => {
                   </div>
 
                   <vxe-input @clear="clear" :clearable="true" :disabled="globalDisabled"
-                    style="width: 500px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
-                    placeholder="试试全表搜索"></vxe-input>
+                    style="width: 400px;margin-right: 5px;margin-left: 20px;" v-model="filterName" type="search"
+                    placeholder="输入过滤条件"></vxe-input>
                   <n-button :disabled="globalDisabled" style="margin-left: 10px;" @click="searchEvent">搜索</n-button>
 
                   <n-button :disabled="globalDisabled" size="small" quaternary circle style="margin-left: 5px;"
@@ -852,7 +856,6 @@ const rowStyle = ({ row }) => {
                   </n-button>
                 </template>
               </vxe-toolbar>
-
               <vxe-table :row-style="rowStyle" :border="false" id="idx" :custom-config="{ storage: true }"
                 :pagerConfig="pagerConfig" size="mini" :menu-config="menuConfig" @menu-click="contextMenuClickEvent"
                 @current-change="currentChange" :loading="loading" show-overflow :keep-source="false" ref="xTable"
@@ -997,7 +1000,7 @@ const rowStyle = ({ row }) => {
     </n-drawer>
 
     <n-drawer :mask-closable="false" v-model:show="showSum" width="700" :placement="placement">
-      <n-drawer-content title="统计层次结构" closable>
+      <n-drawer-content title="统计协议层次结构" closable>
         <PcapSum :query='{ pcap_path: query.pcap_path, file_name: query.file_name }'></PcapSum>
       </n-drawer-content>
     </n-drawer>

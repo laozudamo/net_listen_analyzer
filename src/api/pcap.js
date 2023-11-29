@@ -87,7 +87,7 @@ export function IoStatInfo (params) {
 }
 
 
-//统计协议层次结构及包量（io,phs）接口
+//统计协议协议层次结构及包量（io,phs）接口
 export function IoPhsInfo (params) {
   return request({
     url: 'pcap/statistical/io_phs',

@@ -10,8 +10,8 @@ const router = useRouter()
 const store = useStore()
 
 const form = reactive({
-  username: 'admin',
-  password: 'admin123456',
+  username: '',
+  password: '',
 })
 
 const rules = reactive({
@@ -38,7 +38,7 @@ const submitForm = debounce(() => {
 
   ruleFormRef.value?.validate((errors) => {
     if (!errors) {
-      if (form.username === 'admin' && form.password === '123456') {
+      if (form.username === 'Tommy' && form.password === 'Tommy999') {
         localStorage.setItem('isLogin', true)
         router.push({ path: '/pcap' })
       } else {
