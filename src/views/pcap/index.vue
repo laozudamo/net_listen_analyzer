@@ -143,7 +143,7 @@ async function GetpacpList () {
         key: item.key,
         prefix: renderIcon(Folder),
         children: [],
-        ... (item.values.length > 0 && {disabled: true})
+        ... (item.values.length > 0 && { disabled: true })
       }
 
       if (item.values.length > 0) {
@@ -820,8 +820,8 @@ function playBack (val) {
             </BtnIcon>
           </div>
 
-          <n-tree :selectable="true" :cancelable="false" :node-props="nodeProps" :on-update:expanded-keys="updatePrefixWithExpaned"
-            :multiple="false" block-line :data="listData">
+          <n-tree :selectable="true" :cancelable="false" :node-props="nodeProps"
+            :on-update:expanded-keys="updatePrefixWithExpaned" :multiple="false" block-line :data="listData">
           </n-tree>
         </div>
       </pane>
@@ -851,7 +851,7 @@ function playBack (val) {
                    
                     <n-button>统计源和目标占比</n-button> -->
 
-                    <n-button :disabled="globalDisabled" @click="showExpert = true">回放</n-button>
+                    <!-- <n-button :disabled="globalDisabled" @click="showExpert = true">回放</n-button> -->
 
                     <n-button :disabled="globalDisabled" @click="showExpert = true">专家统计</n-button>
                     <!-- <n-button @click="showTraffic = true">流量图</n-button> -->
@@ -1140,8 +1140,7 @@ function playBack (val) {
   background-color: #8DEEEE !important;
 }
 
-:deep(.n-tree .n-tree-node.n-tree-node--disabled .n-tree-node-content ) {
+:deep(.n-tree .n-tree-node.n-tree-node--disabled .n-tree-node-content) {
   color: #000000;
 }
-
 </style>

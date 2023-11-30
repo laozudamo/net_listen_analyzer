@@ -327,6 +327,8 @@ async function clearSource () {
     if (code == 0) {
       toaster.show("清除成功")
     }
+    await getSotrage()
+
   } catch (error) {
     console.log(error)
   }
