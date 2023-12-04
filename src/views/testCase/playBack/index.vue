@@ -3,7 +3,6 @@ import { reactive, ref } from 'vue'
 import { DocumentCopy16Filled as Copy, Edit20Filled as Edit, DocumentText24Filled as Detail, AirplaneTakeOff16Regular as Run } from "@vicons/fluent";
 import useCommon from '@/components/hooks/handle.js'
 import { list, create, del, update, copy, details } from '@/api/testcase/playback.js'
-
 const model = ref(null)
 
 const { dataSource, pagination, isEdit, updateCheckVal, afterLeave, addData, refresh, delData, confirm, runCase, copyData, editData, rowKey, checkRowKeys, key, filterData } = useCommon({ list, create, update, del, details, copy, resetFormVal, setFormVal, isHandForm: true, handForm });
