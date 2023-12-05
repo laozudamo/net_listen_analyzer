@@ -749,6 +749,7 @@ const nodeProps = ({ option }) => {
 
         treeData.value = []
         codeData.value = null
+        AsicCode.value = null
 
         currentRow.value = false
 
@@ -843,18 +844,7 @@ function playBack (val) {
 
                 <template #tools>
                   <div style="width: 700px; display: flex;justify-content: space-evenly;overflow: auto;">
-
-                    <!-- <n-button>DNS协议层次结构</n-button>
-                    
-            
-                    <n-button>ICMP分析</n-button>
-                   
-                    <n-button>统计源和目标占比</n-button> -->
-
-                    <!-- <n-button :disabled="globalDisabled" @click="showExpert = true">回放</n-button> -->
-
                     <n-button :disabled="globalDisabled" @click="showExpert = true">专家统计</n-button>
-                    <!-- <n-button @click="showTraffic = true">流量图</n-button> -->
                     <n-button :disabled="globalDisabled" @click="showPcapIp = true">IP信息</n-button>
                     <n-button :disabled="globalDisabled" @click="showSum = true">协议层次结构</n-button>
                     <n-button :disabled="globalDisabled" @click="showIO = true">IO图表</n-button>
@@ -922,7 +912,7 @@ function playBack (val) {
               </template>
             </n-spin>
             <splitpanes v-else :push-other-panes="false" :dbl-click-splitter="false">
-              <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="65">
+              <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="55">
                 <div style="padding: 20px;min-width:870px;">
                   <!-- <router-link tag="a" target="_blank" to="/pcap">第一种新窗口打开页面</router-link> -->
 
@@ -936,7 +926,7 @@ function playBack (val) {
                   </div>
                 </div> -->
               </pane>
-              <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="35">
+              <pane style="background-color:#FFF;overflow: auto;" min-size="5" max-size="95" size="45">
                 <div style="display: flex;padding: 0px;height: 100%;">
                   <div style="margin-right: 20px;">
                     <div style="background-color: #e7e5e5;padding: 0px 10px;" v-for="line in binaryWall" :key="line">
@@ -954,6 +944,12 @@ function playBack (val) {
                   </div>
 
                   <div style="margin-left: 15px;width: 170px;min-width: 170px;">
+                    <div v-if="!AsicCode" class="empty">
+                      <img :src="caseimg" alt="">
+                      <div style="font-size: 13px;color: #999;">
+                        暂无数据
+                      </div>
+                    </div>
                     <n-grid x-gap="0" :cols="16">
                       <n-grid-item v-for="(code, i) in AsicCode" :key="i">
                         <div :class="code.isActive ? 'active' : ''">
@@ -963,12 +959,7 @@ function playBack (val) {
                     </n-grid>
                   </div>
                 </div>
-                <div v-if="codeData === null" style="display: flex;justify-content: center;">
-                  <img :src="caseimg" alt="">
-                  <div style="font-size: 20px;color: #999; display: flex;justify-content: center;align-items: center;">
-                    <!-- 暂无数据 -->
-                  </div>
-                </div>
+
               </pane>
             </splitpanes>
           </pane>
@@ -1119,7 +1110,7 @@ function playBack (val) {
   cursor: pointer;
 }
 
-::v-deep.splitpanes.default-theme .splitpanes__splitter {
+:deep(.splitpanes.default-theme .splitpanes__splitter) {
   background-color: #E9EAEC;
 }
 
@@ -1142,5 +1133,14 @@ function playBack (val) {
 
 :deep(.n-tree .n-tree-node.n-tree-node--disabled .n-tree-node-content) {
   color: #000000;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 14px;
+  color: #606266;
+  // height: 100%;
 }
 </style>
