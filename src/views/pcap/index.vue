@@ -5,7 +5,6 @@ import { RouterLink, useRouter } from "vue-router";
 import { getData, pacpList, getDetail, filterList, expertInfo, sessionInfo, endPointInfo, trackList, trackData } from '@/api/pcap.js'
 import { createToaster } from "@meforma/vue-toaster";
 const toaster = createToaster({ type: 'error', position: 'top', duration: 1000 });
-
 import { Splitpanes, Pane } from 'splitpanes'
 import { useElementSize } from '@vueuse/core'
 import caseimg from '@/assets/img/case.png'
